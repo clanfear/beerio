@@ -43,7 +43,12 @@ beerio_data <- beerio_sheet_raw %>%
   mutate(Punishment = ifelse(is.na(Punishment), "None", Punishment)) %>%
   mutate(Punished = str_remove(str_extract(Punishment, "-> [A-Za-z]*"), "-> ")) %>% 
   mutate(Punisher = str_remove(str_extract(Punishment, "[A-Za-z]* ->"), " ->")) %>%
-  mutate(Punishment = ifelse(Name == Punished, paste0("Punished by ", ifelse(Punisher==Punished, "themself", Punisher)), NA) )
+  mutate(Punishment = ifelse(Name == Punished, paste0("Punished by ", ifelse(Punisher==Punished, "themself", Punisher)), NA) ) %>%
+  mutate(Give_and_Take = case_when(
+    is.na(Punished) & is.na(Punisher) ~ "No Shot",
+    Punished == Name ~ "Take",
+    Punisher == Name ~ "Give"
+  ))
 
 last_players <- beerio_data %>%
   filter(Date ==  max(Date)) %>%
@@ -57,9 +62,11 @@ if(length(last_players)==2){
     last_players[length(last_players)], sep="")
 }
 
+n_recent_games <- beerio_data %>%
+  filter(Date ==  max(Date)) %>% pull(Game) %>% max()
 ```
 
-This document tracks Beerio game statistics. The last tracked game occurred on `r str_replace(format(max(beerio_data$Date), "%A, %B %e, %Y"), "  ", " ")` between `r last_players_text`.
+This document tracks Beerio game statistics. The last tracked `r ifelse(n_recent_games > 1, "games were", "game was")` `r ifelse(n_recent_games==1, "one", n_recent_games)` `r ifelse(n_recent_games > 1, "games", "game")` played on `r str_replace(format(max(beerio_data$Date), "%A, %B %e, %Y"), "  ", " ")` by `r last_players_text`.
 
 # Descriptive Statistics
 
@@ -87,7 +94,7 @@ beerio_data %>%
 
 # Figures
 
-The first figure depicts Beerio scores over games in each day. Punishments are highlighted.
+The first figure depicts Beerio scores over games in each day. Punishments are indicated by a blue shell.
 
 ```{r, echo=FALSE, fig.width=10, fig.align='center', dev="png"}
 beerio_data %>%
@@ -118,25 +125,62 @@ score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=
 The next plot pools the data across evenings to show the change in average score for each player as the evening wears on. Note the trend is relatively similar across players. Each additional game is associated with a score difference of `r score_text`.
 
 ```{r echo=FALSE, fig.width=10, fig.align='center', dev="png"}
+legend_data <- tibble(x = max(beerio_data$Game)*0.9,
+                      y = max(beerio_data$Score)*c(1, 0.90),
+                      image = c("img/star.png","img/bomb.png"),
+                      text = c("Gave Shot", "Took Shot"))
 ggplot(beerio_data, aes(x = Game, y = Score)) + 
-  geom_point(aes(color=Name)) + 
+  geom_point(aes(fill=Name), size =3, shape  = 21, color = "black") + 
   geom_smooth(method="lm", aes(color=Name, fill =Name), size = 2) + 
   theme_mk8() + ylab("") + scale_fill_discrete("") +
   scale_color_discrete("") +
+    geom_image(data = beerio_data %>%  
+               filter(!is.na(Punished)) %>%
+               mutate(Image = case_when(
+                 Give_and_Take == "Take" ~ "img/bomb.png",
+                 Give_and_Take == "Give" ~ "img/star.png")) %>% 
+               select(Game, Score, Image), 
+             aes(x = Game, y = Score, image = Image), 
+             size = .05, inherit.aes = FALSE) +
+  geom_image(data=legend_data, aes(x=x, y=y, image=image), inherit.aes=FALSE) +
+  geom_text(data=legend_data, aes(x=x, y=y, label = text), hjust = 0, nudge_x = 0.25, inherit.aes=FALSE) +
   ggtitle("Beerio Score Over Games", subtitle = "Regressed on game number") + 
+  coord_cartesian(ylim = c(0, max(beerio_data$Score+3))) +
   theme(legend.position = "bottom")
 ```
 
-The final plot depicts overall score distributions for each player. Wider cross-sections indicate more games with scores in that range.
+The final plot depicts overall score distributions for each player. Wider cross-sections indicate more games with scores in that range. Points indicate scores for each match, jittered horizontally to reduce overplotting.
 
 ```{r, echo=FALSE, fig.width=10, fig.align='center', dev="png"}
+
+legend_data <- tibble(x = length(unique(beerio_data$Name)),
+                      y = max(beerio_data$Score)*c(1, 0.90),
+                      image = c("img/star.png","img/bomb.png"),
+                      text = c("Gave Shot", "Took Shot"))
+                      
+
 beerio_data %>%
   ggplot(aes( x = Name, y = Score, fill = Name)) + 
-  geom_violin() + 
+  geom_violin(show.legend=FALSE) + 
+  geom_point(data = beerio_data %>% filter(Give_and_Take == "No Shot"), 
+             aes(x = Name, y = Score),  alpha = 0.5, size = 3, 
+             position = position_jitter(width = 0.08, height=0), inherit.aes = FALSE) +
+  geom_image(data = beerio_data %>%  
+               filter(!is.na(Punished)) %>%
+               mutate(Image = case_when(
+                 Give_and_Take == "Take" ~ "img/bomb.png",
+                 Give_and_Take == "Give" ~ "img/star.png")) %>% 
+               select(Name, Score, Image), 
+             aes(x = Name, y = Score, image = Image), position = position_jitter(width = 0.08, height=0), 
+             size = .05, inherit.aes = FALSE) +
+  geom_image(data=legend_data, aes(x=x, y=y, image=image), inherit.aes=FALSE) +
+  geom_text(data=legend_data, aes(x=x, y=y, label = text), hjust = 0, nudge_x = 0.1, inherit.aes=FALSE) +
+  scale_color_manual("Shots", values = c("No Shot" = "black", "Give" = "white", "Take" = "red")) +
   xlab("") + 
   ylab("") + 
+  coord_cartesian(ylim = c(0, max(beerio_data$Score+3))) +
   theme_mk8() + 
-  theme(legend.position = "none") + 
+  theme(legend.position = "bottom", legend.key = element_rect(fill = "gray70", color = NA)) + 
   ggtitle("Beerio Score Distributions")
 ```
 
