@@ -105,8 +105,8 @@ The next plot pools the data across evenings to show the change in average score
 ```{r echo=FALSE, fig.width=8, fig.align='center'}
 ggplot(beerio_data, aes(x = Game, y = Score)) + 
   geom_point(aes(color=Name)) + 
-  geom_smooth(method="lm", aes(color=Name)) + 
-  theme_mk8() + 
+  geom_smooth(method="lm", aes(color=Name), size = 2) + 
+  theme_mk8() + ylab("") +
   scale_color_discrete("") +
   ggtitle("Beerio Score Over Games", subtitle = "Regressed on game number") + 
   theme(legend.position = "bottom")
