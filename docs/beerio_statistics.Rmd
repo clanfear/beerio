@@ -90,7 +90,7 @@ beerio_table <- beerio_data %>%
     Name == "Chad" ~ "<img src = 'img/donkeykong.png' height=20> Chad",
     TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=20>")
   ))
-  datatable(beerio_table, options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, scrollY=FALSE, paging=FALSE, info=FALSE), escape=FALSE, autoHideNavigation=TRUE)
+  datatable(beerio_table, options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, scrollY=FALSE, paging=FALSE, info=FALSE), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
 ```
 
 # Figures
