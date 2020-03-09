@@ -9,7 +9,7 @@ library(tidyverse)
 library(googlesheets4)
 library(extrafont)
 library(ggforce)
-library(gt)
+library(ggimage)
 # ttf_import("../syntax/fonts")
 # font_import()
 # Sys.setenv(R_GSCMD="C:/Program Files/gs/gs9.50/bin/gswin64c.exe")
@@ -84,14 +84,16 @@ The first figure depicts Beerio scores over games in each day. Punishments are h
 beerio_data %>%
   ggplot(aes(x = Game, y = Score, group = Name, color = Name)) + 
   facet_wrap(~Day) + 
-  geom_line(size = 2) + 
-  geom_point(data = beerio_data %>% 
+  geom_line(size = 2) +
+  geom_image(data = beerio_data %>%  
+               mutate(Image = ifelse(!is.na(Punishment), "../img/blueshell.png", NA)) %>%
                filter(!is.na(Punishment)), 
-             aes(x = Game, y = Score), 
-             size = 5, fill = "black") + ylab("") + scale_color_discrete("") +
-  geom_mark_circle(aes(label = Name, description = Punishment, filter = !is.na(Punishment))) +
+             aes(x = Game, y = Score, image = Image), 
+             size = .125, inherit.aes = FALSE) + ylab("") + scale_color_discrete("") +
+  geom_mark_circle(aes(label = Name, description = Punishment, filter = !is.na(Punishment)), color = NA) +
   ggtitle("Beerio Scores", subtitle = "Over the course of evenings") +
   theme_mk8() + theme(legend.position="bottom")
+
 score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=TRUE) %>% 
   select(term, estimate, conf.low, conf.high) %>% filter(term == "Game") %>%
   mutate_if(is.numeric, ~ round(.,2)) %>%
