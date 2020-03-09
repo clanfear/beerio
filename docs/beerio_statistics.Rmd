@@ -48,7 +48,6 @@ beerio_data <- beerio_sheet_raw %>%
 last_players <- beerio_data %>%
   filter(Date ==  max(Date)) %>%
   distinct(Name) %>% pull(Name)
-last_players
 
 if(length(last_players)==2){
   last_players_text <- paste(last_players, collapse = " and ")
@@ -72,7 +71,8 @@ beerio_data %>%
   summarize(`Games<br>Played` = n(), 
             `Average<br>Score` = round(mean(Score),1), 
             `Best<br>Score`=max(Score), 
-            `Worst<br>Score` = min(Score)) %>% 
+            `Worst<br>Score` = min(Score),
+            `Times<br>Punished`=sum(!is.na(Punishment))) %>% 
   knitr::kable()
 ```
 
@@ -80,7 +80,7 @@ beerio_data %>%
 
 The first figure depicts Beerio scores over games in each day. Punishments are highlighted.
 
-```{r, echo=FALSE, fig.width=8, fig.align='center'}
+```{r, echo=FALSE, fig.width=8, fig.align='center', dev="svg"}
 beerio_data %>%
   ggplot(aes(x = Game, y = Score, group = Name, color = Name)) + 
   facet_wrap(~Day) + 
@@ -102,11 +102,11 @@ score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=
 
 The next plot pools the data across evenings to show the change in average score for each player as the evening wears on. Note the trend is relatively similar across players. Each additional game is associated with a score difference of `r score_text`.
 
-```{r echo=FALSE, fig.width=8, fig.align='center'}
+```{r echo=FALSE, fig.width=8, fig.align='center', dev="svg"}
 ggplot(beerio_data, aes(x = Game, y = Score)) + 
   geom_point(aes(color=Name)) + 
-  geom_smooth(method="lm", aes(color=Name), size = 2) + 
-  theme_mk8() + ylab("") +
+  geom_smooth(method="lm", aes(color=Name, fill =Name), size = 2) + 
+  theme_mk8() + ylab("") + scale_fill_discrete("") +
   scale_color_discrete("") +
   ggtitle("Beerio Score Over Games", subtitle = "Regressed on game number") + 
   theme(legend.position = "bottom")
@@ -114,7 +114,7 @@ ggplot(beerio_data, aes(x = Game, y = Score)) +
 
 The final plot depicts overall score distributions for each player. Wider cross-sections indicate more games with scores in that range.
 
-```{r, echo=FALSE, fig.width=8, fig.align='center'}
+```{r, echo=FALSE, fig.width=8, fig.align='center', dev="svg"}
 beerio_data %>%
   ggplot(aes( x = Name, y = Score, fill = Name)) + 
   geom_violin() + 
