@@ -43,7 +43,7 @@ beerio_data <- beerio_sheet_raw %>%
   mutate(Punishment = ifelse(is.na(Punishment), "None", Punishment)) %>%
   mutate(Punished = str_remove(str_extract(Punishment, "-> [A-Za-z]*"), "-> ")) %>% 
   mutate(Punisher = str_remove(str_extract(Punishment, "[A-Za-z]* ->"), " ->")) %>%
-  mutate(Punishment = ifelse(Name == Punished, paste0("Punished by ", ifelse(Punisher==Punished, "himself", Punisher)), NA) )
+  mutate(Punishment = ifelse(Name == Punished, paste0("Punished by ", ifelse(Punisher==Punished, "themself", Punisher)), NA) )
 
 last_players <- beerio_data %>%
   filter(Date ==  max(Date)) %>%
@@ -73,6 +73,12 @@ beerio_data %>%
             `Best<br>Score`=max(Score), 
             `Worst<br>Score` = min(Score),
             `Times<br>Punished`=sum(!is.na(Punishment))) %>% 
+  mutate(Name = case_when(
+    Name == "Chuck" ~ "Chuck <img src = 'img/lightblueshyguy.png' height=20>",
+    Name == "Neil" ~ "Neil <img src = 'img/blackshyguy.png' height=20>",
+    Name == "Shawn" ~ "Shawn <img src = 'img/donkeykong.png' height=20>",
+    Name == "Steve" ~ "Steve <img src = 'img/toadette.png' height=20>"
+  )) %>%
   knitr::kable()
 ```
 
@@ -86,7 +92,10 @@ beerio_data %>%
   facet_wrap(~Day) + 
   geom_line(size = 2) +
   geom_image(data = beerio_data %>%  
-               mutate(Image = ifelse(!is.na(Punishment), "../img/blueshell.png", NA)) %>%
+               mutate(Image = case_when(
+                 is.na(Punishment) ~ NA_character_,
+                 str_detect(Punishment, "themself") ~ "img/banana.png",
+                 TRUE ~ "img/blueshell.png")) %>%
                filter(!is.na(Punishment)), 
              aes(x = Game, y = Score, image = Image), 
              size = .125, inherit.aes = FALSE) + ylab("") + scale_color_discrete("") +
