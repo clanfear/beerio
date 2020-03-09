@@ -10,6 +10,7 @@ library(googlesheets4)
 library(extrafont)
 library(ggforce)
 library(ggimage)
+library(DT)
 # ttf_import("../syntax/fonts")
 # font_import()
 # Sys.setenv(R_GSCMD="C:/Program Files/gs/gs9.50/bin/gswin64c.exe")
@@ -73,7 +74,7 @@ This document tracks Beerio game statistics. The last tracked `r ifelse(n_recent
 This table depicts overall Beerio statistics for all tracked players.
 
 ```{r, echo=FALSE}
-beerio_data %>% 
+beerio_table <- beerio_data %>% 
   group_by(Name) %>% 
   summarize(`Games<br>Played` = n(), 
             `Average<br>Score` = round(mean(Score),1), 
@@ -81,15 +82,15 @@ beerio_data %>%
             `Worst<br>Score` = min(Score),
             `Times<br>Punished`=sum(!is.na(Punishment))) %>% 
   mutate(Name = case_when(
-    Name == "Chuck" ~ "Chuck <img src = 'img/lightblueshyguy.png' height=20>",
-    Name == "Neil" ~ "Neil <img src = 'img/blackshyguy.png' height=20>",
-    Name == "Shawn" ~ "Shawn <img src = 'img/catpeach.png' height=20>",
-    Name == "Steve" ~ "Steve <img src = 'img/toadette.png' height=20>",
-    Name == "Korl" ~ "Korl <img src = 'img/lakitu.png' height=20>",
-    Name == "Chad" ~ "Chad <img src = 'img/donkeykong.png' height=20>",
+    Name == "Chuck" ~ "<img src = 'img/lightblueshyguy.png' height=20> Chuck",
+    Name == "Neil" ~ "<img src = 'img/blackshyguy.png' height=20> Neil",
+    Name == "Shawn" ~ "<img src = 'img/catpeach.png' height=20> Shawn",
+    Name == "Steve" ~ "<img src = 'img/toadette.png' height=20> Steve",
+    Name == "Korl" ~ "<img src = 'img/lakitu.png' height=20> Korl",
+    Name == "Chad" ~ "<img src = 'img/donkeykong.png' height=20> Chad",
     TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=20>")
-  )) %>%
-  knitr::kable()
+  ))
+  datatable(beerio_table, options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, scrollY=FALSE, paging=FALSE, info=FALSE), escape=FALSE, autoHideNavigation=TRUE)
 ```
 
 # Figures
