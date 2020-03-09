@@ -107,6 +107,7 @@ ggplot(beerio_data, aes(x = Game, y = Score)) +
   geom_point(aes(color=Name)) + 
   geom_smooth(method="lm", aes(color=Name)) + 
   theme_mk8() + 
+  scale_color_discrete("") +
   ggtitle("Beerio Score Over Games", subtitle = "Regressed on game number") + 
   theme(legend.position = "bottom")
 ```
