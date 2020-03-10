@@ -111,9 +111,9 @@ options = list(
   fillContainer = TRUE,
   pageLength = 10, paging=TRUE, info=TRUE, searching=TRUE, lengthChange=TRUE,
   aoColumnDefs = list(
-    list(width = "45px",  targets = c(2)),
-    list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', targets = c(2,3,4,5)),
-    list(width = '220px', bSortable = TRUE, sType = 'NumericOrBlank', targets = c(6)))
+    list(width = "45px", className = 'dt-center',  targets = c(1)),
+    list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(2,3,4,5)),
+    list(width = '250px', bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(6)))
 ), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 
 ```
@@ -143,7 +143,12 @@ beerio_table <- beerio_data %>%
     TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=20>")
   ))
   datatable(beerio_table, 
-            options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE), 
+            options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
+                           columnDefs = 
+                             list(
+                               list(className = 'dt-center',  targets = c(1,2,3,4,5,6))
+                               )
+                           ), 
             escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 ```
 
