@@ -108,10 +108,12 @@ callback = JS("
   "),
 options = list(
   autoWidth = TRUE,
-  pageLength = 10, scrollY=FALSE, scrollX=TRUE, paging=TRUE, info=TRUE,
+  fillContainer = TRUE,
+  pageLength = 10, paging=TRUE, info=TRUE, searching=TRUE, lengthChange=TRUE,
   aoColumnDefs = list(
-    list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', targets = c(1,2,3,4,5)),
-    list(width = '250px', bSortable = TRUE, sType = 'NumericOrBlank', targets = c(6)))
+    list(width = "45px",  targets = c(2)),
+    list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', targets = c(2,3,4,5)),
+    list(width = '220px', bSortable = TRUE, sType = 'NumericOrBlank', targets = c(6)))
 ), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 
 ```
@@ -140,7 +142,9 @@ beerio_table <- beerio_data %>%
     Name == "Chad" ~ "<img src = 'img/donkeykong.png' height=20> Chad",
     TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=20>")
   ))
-  datatable(beerio_table, options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, scrollY=FALSE, paging=FALSE, info=FALSE), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+  datatable(beerio_table, 
+            options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE), 
+            escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 ```
 
 # Figures
