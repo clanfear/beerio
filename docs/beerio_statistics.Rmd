@@ -81,7 +81,39 @@ all_games <- beerio_data %>% select(Date, Game, Name, Score) %>%
     select(Date, Game, Events)) %>%
   arrange(desc(Date)) %>%
   mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " "))
-datatable(all_games, options = list(pageLength = 10, scrollY=FALSE, paging=TRUE, info=TRUE), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+# datatable(all_games, options = list(pageLength = 10, scrollY=FALSE, paging=TRUE, info=TRUE), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+
+DT::datatable({
+  all_games %>% mutate_all(~as.character(.))
+},
+callback = JS("
+  $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
+    var retVal;
+        if( x === '' || $.isEmptyObject(x)) x = 1000;
+    if( y === '' || $.isEmptyObject(y)) y = 1000;
+    x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+    y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+    if (x==y) retVal= 0; 
+    else retVal = (x>y) ? 1 : -1; 
+    return retVal;
+  };
+  $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
+  var retVal;
+  x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+  y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+  if (x==y) retVal= 0; 
+  else retVal = (x>y) ? 1 : -1; 
+  return retVal;
+  };
+  "),
+options = list(
+  autoWidth = TRUE,
+  pageLength = 10, scrollY=FALSE, paging=TRUE, info=TRUE,
+  aoColumnDefs = list(
+    list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', targets = c(1,2,3,4,5)),
+    list(width = '250px', bSortable = TRUE, sType = 'NumericOrBlank', targets = c(6)))
+), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+
 ```
 
 
