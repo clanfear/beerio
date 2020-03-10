@@ -81,7 +81,7 @@ all_games <- beerio_data %>% select(Date, Game, Name, Score) %>%
     select(Date, Game, Events)) %>%
   arrange(desc(Date)) %>%
   mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " "))
-datatable(all_games, options = list(pageLength = 10, scrollY=FALSE, paging=TRUE, info=TRUE), escape=FALSE, filter="top", autoHideNavigation=TRUE, rownames=FALSE)
+datatable(all_games, options = list(pageLength = 10, scrollY=FALSE, paging=TRUE, info=TRUE), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
 ```
 
 
