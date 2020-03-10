@@ -11,10 +11,10 @@ library(extrafont)
 library(ggforce)
 library(ggimage)
 library(DT)
-# ttf_import("../syntax/fonts")
+ttf_import("./fonts")
 # font_import()
 # Sys.setenv(R_GSCMD="C:/Program Files/gs/gs9.50/bin/gswin64c.exe")
-# loadfonts(device = "win")
+loadfonts(device = "win")
 #sheets_auth("cclanfear@gmail.com")
 theme_mk8 <- function(){
   theme_minimal(base_size = 14) + 
@@ -69,18 +69,36 @@ n_recent_games <- beerio_data %>%
 
 This document tracks Beerio game statistics. The last tracked `r ifelse(n_recent_games > 1, "games were", "game was")` `r ifelse(n_recent_games==1, "one", n_recent_games)` `r ifelse(n_recent_games > 1, "games", "game")` played on `r str_replace(format(max(beerio_data$Date), "%A, %B %e, %Y"), "  ", " ")` by `r last_players_text`.
 
+# All Game Data
+
+This table contains scores and events for all logged games. It is searchable and sortable on all columns.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+all_games <- beerio_data %>% select(Date, Game, Name, Score) %>%
+  pivot_wider(names_from = Name, values_from = Score) %>%
+  left_join(beerio_data %>% filter(Give_and_Take == "Take") %>% select(Date, Game, Name, Punishment) %>%
+    group_by(Date, Game) %>% summarize(Events = str_c(str_c(Name, " ", Punishment), collapse = ", ")) %>% 
+    select(Date, Game, Events)) %>%
+  arrange(desc(Date)) %>%
+  mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " "))
+datatable(all_games, options = list(pageLength = 10, scrollY=FALSE, paging=TRUE, info=TRUE), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+```
+
+
+
 # Descriptive Statistics
 
 This table depicts overall Beerio statistics for all tracked players.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 beerio_table <- beerio_data %>% 
   group_by(Name) %>% 
   summarize(`Games<br>Played` = n(), 
             `Average<br>Score` = round(mean(Score),1), 
             `Best<br>Score`=max(Score), 
             `Worst<br>Score` = min(Score),
-            `Times<br>Punished`=sum(!is.na(Punishment))) %>% 
+            `Times<br>Punished`=sum(!is.na(Punishment)),
+            `Times<br>Punisher`=sum(Give_and_Take=="Give")) %>% 
   mutate(Name = case_when(
     Name == "Chuck" ~ "<img src = 'img/lightblueshyguy.png' height=20> Chuck",
     Name == "Neil" ~ "<img src = 'img/blackshyguy.png' height=20> Neil",
@@ -95,10 +113,13 @@ beerio_table <- beerio_data %>%
 
 # Figures
 
-The first figure depicts Beerio scores over games in each day. Punishments are indicated by a blue shell.
+The first figure depicts Beerio scores over games in each day. Punishments are indicated by a blue shell. Days with only one game are excluded.
 
-```{r, echo=FALSE, fig.width=10, fig.align='center', dev="png"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png"}
 beerio_data %>%
+  group_by(Date) %>%
+  filter(max(Game) > 1) %>%
+  ungroup() %>%
   ggplot(aes(x = Game, y = Score, group = Name, color = Name)) + 
   facet_wrap(~Day, scales = "free_x") + 
   geom_line(size = 2) +
@@ -125,7 +146,7 @@ score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=
 
 The next plot pools the data across evenings to show the change in average score for each player as the evening wears on. Note the trend is relatively similar across players. Each additional game is associated with a score difference of `r score_text`.
 
-```{r echo=FALSE, fig.width=10, fig.align='center', dev="png"}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png"}
 legend_data <- tibble(x = max(beerio_data$Game)*0.9,
                       y = max(beerio_data$Score)*c(1, 0.90),
                       image = c("img/star.png","img/bomb.png"),
@@ -152,7 +173,7 @@ ggplot(beerio_data, aes(x = Game, y = Score)) +
 
 The final plot depicts overall score distributions for each player. Wider cross-sections indicate more games with scores in that range. Points indicate scores for each match, jittered horizontally to reduce overplotting.
 
-```{r, echo=FALSE, fig.width=10, fig.align='center', dev="png"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png"}
 
 legend_data <- tibble(x = length(unique(beerio_data$Name)),
                       y = max(beerio_data$Score)*c(1, 0.90),
