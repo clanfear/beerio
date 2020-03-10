@@ -108,11 +108,11 @@ callback = JS("
   "),
 options = list(
   autoWidth = TRUE,
-  pageLength = 10, scrollY=FALSE, paging=TRUE, info=TRUE,
+  pageLength = 10, scrollY=FALSE, scrollX=TRUE, paging=TRUE, info=TRUE,
   aoColumnDefs = list(
     list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', targets = c(1,2,3,4,5)),
     list(width = '250px', bSortable = TRUE, sType = 'NumericOrBlank', targets = c(6)))
-), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 
 ```
 
@@ -203,7 +203,7 @@ ggplot(beerio_data, aes(x = Game, y = Score)) +
   theme(legend.position = "bottom")
 ```
 
-The final plot depicts overall score distributions for each player. Wider cross-sections indicate more games with scores in that range. Points indicate scores for each match, jittered horizontally to reduce overplotting.
+The next plot depicts overall score distributions for each player. Wider cross-sections indicate more games with scores in that range. Points indicate scores for each match, jittered horizontally to reduce overplotting.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png"}
 
@@ -235,6 +235,41 @@ beerio_data %>%
   coord_cartesian(ylim = c(0, max(beerio_data$Score+3))) +
   theme_mk8() + 
   theme(legend.position = "bottom", legend.key = element_rect(fill = "gray70", color = NA)) + 
-  ggtitle("Beerio Score Distributions")
+  ggtitle("Individual Score Distributions")
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+max_score <- max(table(beerio_data$Score))
+median_score <- median(beerio_data$Score, na.rm=T)
+mean_score <- mean(beerio_data$Score, na.rm=T)
+```
+
+The last plot depicts the overall score distribution with mean (`r round(mean_score,1)`) and median (`r round(median_score,1)`).
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png"}
+
+shift <- ifelse(median_score > mean_score, TRUE, FALSE) 
+
+beerio_data %>%
+  ggplot(aes( x = Score)) + 
+  geom_histogram(fill = "#F8766D") + 
+  ggtitle("Overall Score Distribution") + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) + 
+  geom_line(data = tibble(x = rep(mean_score, 2),
+                          y = c(-.05*max_score, 1.05*max(table(beerio_data$Score)))),
+              aes(x = x, y = y), 
+            color = "#00BFC4", size = 2) +
+  geom_line(data = tibble(x = rep(median_score, 2),
+                          y = c(-.05*max_score, 1.05*max(table(beerio_data$Score)))),
+            aes(x = x, y = y),
+            color = "#C77CFF", size = 2) +
+  geom_label(data = tibble(x = c(median_score, mean_score),
+                          y = rep(-.06*max_score, 2),
+                          label = c("Median", "Mean"),
+                          hjust = as.numeric(c(!shift, shift))),
+            aes(x=x,y=y,label=label, fill = label, hjust=hjust), size = 4.5, label.size=0, label.padding=unit(0.3,"lines")) +
+  scale_fill_manual(values = c(c("Median"="#C77CFF","Mean"="#00BFC4"))) +
+  theme_mk8() +
+  theme(legend.position = "none")
 ```
 
