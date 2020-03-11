@@ -122,17 +122,21 @@ options = list(
 
 # Descriptive Statistics
 
-This table depicts overall Beerio statistics for all tracked players.
+This table depicts overall Beerio statistics for all tracked players. Recent Average is calculated as the average score from the last date the player played.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 beerio_table <- beerio_data %>% 
   group_by(Name) %>% 
   summarize(`Games<br>Played` = n(), 
-            `Average<br>Score` = round(mean(Score),1), 
+            `Overall<br>Average` = round(mean(Score),1), 
             `Best<br>Score`=max(Score), 
             `Worst<br>Score` = min(Score),
             `Times<br>Punished`=sum(!is.na(Punishment)),
             `Times<br>Punisher`=sum(Give_and_Take=="Give")) %>% 
+  left_join(beerio_data %>% 
+  group_by(Name) %>%
+  filter(Date==max(Date)) %>%
+  summarize(`Recent<br>Average`=round(mean(Score),1))) %>%
   mutate(Name = case_when(
     Name == "Chuck" ~ "<img src = 'img/lightblueshyguy.png' height=20> Chuck",
     Name == "Neil" ~ "<img src = 'img/blackshyguy.png' height=20> Neil",
@@ -141,12 +145,13 @@ beerio_table <- beerio_data %>%
     Name == "Korl" ~ "<img src = 'img/lakitu.png' height=20> Korl",
     Name == "Chad" ~ "<img src = 'img/donkeykong.png' height=20> Chad",
     TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=20>")
-  ))
+  )) %>%
+  select(Name, `Games<br>Played`,`Overall<br>Average`, `Recent<br>Average`, `Best<br>Score`, `Worst<br>Score`, `Times<br>Punished`, `Times<br>Punisher`)
   datatable(beerio_table, 
             options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
                            columnDefs = 
                              list(
-                               list(className = 'dt-center',  targets = c(1,2,3,4,5,6))
+                               list(className = 'dt-center',  targets = c(1,2,3,4,5,6,7))
                                )
                            ), 
             escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
