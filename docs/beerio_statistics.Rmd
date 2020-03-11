@@ -245,7 +245,6 @@ legend_data <- tibble(x = length(unique(beerio_data$Name))*c(1.05, 0.95),
                       text = c("Gave Shot", "Took Shot"))
                       
 beerio_data %>%
-  mutate(Name = fct_rev(Name)) %>%
   ggplot(aes( y = Name, x = Score, fill = Name)) + 
   geom_violin(show.legend=FALSE, draw_quantiles = c(0.5)) + 
   geom_point(data = beerio_data %>% filter(Give_and_Take == "No Shot"), 
@@ -263,7 +262,7 @@ beerio_data %>%
   geom_text(data=legend_data, aes(y=x, x=y, label = text), hjust = 0, nudge_x = 1, inherit.aes=FALSE) +
   scale_color_manual("Shots", values = c("No Shot" = "black", "Give" = "white", "Take" = "red")) +
   xlab("") + 
-  ylab("") + 
+  ylab("") +
   coord_cartesian(xlim = c(min(beerio_data$Score-3), max(beerio_data$Score+3))) +
   theme_mk8() + 
   theme(legend.position = "bottom", legend.key = element_rect(fill = "gray70", color = NA)) + 
