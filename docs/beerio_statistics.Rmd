@@ -156,7 +156,7 @@ beerio_table <- beerio_data %>%
 
 The first figure depicts Beerio scores over games in each day. Punishments are indicated by a blue shell. Days with only one game are excluded.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
 beerio_data %>%
   group_by(Date) %>%
   filter(max(Game) > 1) %>%
@@ -185,15 +185,16 @@ score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=
 
 ```
 
-The next plot pools the data across evenings to show the change in average score for each player as the evening wears on. Note the trend is relatively similar across players. Each additional game is associated with a score difference of `r score_text`.
+The next plot pools the data across evenings to show the change in average score for each player as the evening wears on. Points indicate scores for each match, jittered horizontally to reduce overplotting. Lines are simple linear regressions of score on game number. Note the trend is relatively similar across players. Each additional game is associated with a score difference of `r score_text`. 
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png"}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
 legend_data <- tibble(x = max(beerio_data$Game)*0.9,
                       y = max(beerio_data$Score)*c(1, 0.90),
                       image = c("img/star.png","img/bomb.png"),
                       text = c("Gave Shot", "Took Shot"))
 ggplot(beerio_data, aes(x = Game, y = Score)) + 
-  geom_point(aes(fill=Name), size =3, shape  = 21, color = "black") + 
+  geom_point(data = beerio_data %>%  
+               filter(is.na(Punished)), aes(fill=Name), size =3, shape  = 21, color = "black", position = position_jitter(height=0, width=0.1)) + 
   geom_smooth(method="lm", aes(color=Name, fill =Name), size = 2) + 
   theme_mk8() + ylab("") + scale_fill_discrete("") +
   scale_color_discrete("") +
@@ -204,7 +205,7 @@ ggplot(beerio_data, aes(x = Game, y = Score)) +
                  Give_and_Take == "Give" ~ "img/star.png")) %>% 
                select(Game, Score, Image), 
              aes(x = Game, y = Score, image = Image), 
-             size = .05, inherit.aes = FALSE) +
+             size = .05, inherit.aes = FALSE, position = position_jitter(height=0, width=0.1)) +
   geom_image(data=legend_data, aes(x=x, y=y, image=image), inherit.aes=FALSE) +
   geom_text(data=legend_data, aes(x=x, y=y, label = text), hjust = 0, nudge_x = 0.25, inherit.aes=FALSE) +
   ggtitle("Beerio Score Over Games", subtitle = "Regressed on game number") + 
@@ -212,39 +213,65 @@ ggplot(beerio_data, aes(x = Game, y = Score)) +
   theme(legend.position = "bottom")
 ```
 
-The next plot depicts overall score distributions for each player. Wider cross-sections indicate more games with scores in that range. Points indicate scores for each match, jittered horizontally to reduce overplotting.
+The next plot depicts overall score distributions for each player as a violin--a symmetrical density plot. Wider cross-sections indicate more games with scores in that range. Points indicate scores for each match, jittered horizontally to reduce overplotting. The line inside the violin denotes the median score.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
 
-legend_data <- tibble(x = length(unique(beerio_data$Name)),
-                      y = max(beerio_data$Score)*c(1, 0.90),
+legend_data <- tibble(x = length(unique(beerio_data$Name))*c(1.05, 0.95),
+                      y = max(beerio_data$Score)*0.95,
                       image = c("img/star.png","img/bomb.png"),
                       text = c("Gave Shot", "Took Shot"))
                       
-
 beerio_data %>%
-  ggplot(aes( x = Name, y = Score, fill = Name)) + 
-  geom_violin(show.legend=FALSE) + 
+  mutate(Name = fct_rev(Name)) %>%
+  ggplot(aes( y = Name, x = Score, fill = Name)) + 
+  geom_violin(show.legend=FALSE, draw_quantiles = c(0.5)) + 
   geom_point(data = beerio_data %>% filter(Give_and_Take == "No Shot"), 
-             aes(x = Name, y = Score),  alpha = 0.5, size = 3, 
-             position = position_jitter(width = 0.08, height=0), inherit.aes = FALSE) +
+             aes(y = Name, x = Score),  alpha = 0.5, size = 3, 
+             position = position_jitter(height = 0.08, width=0), inherit.aes = FALSE) +
   geom_image(data = beerio_data %>%  
                filter(!is.na(Punished)) %>%
                mutate(Image = case_when(
                  Give_and_Take == "Take" ~ "img/bomb.png",
                  Give_and_Take == "Give" ~ "img/star.png")) %>% 
                select(Name, Score, Image), 
-             aes(x = Name, y = Score, image = Image), position = position_jitter(width = 0.08, height=0), 
+             aes(y = Name, x = Score, image = Image), position = position_jitter(height = 0.08, width=0), 
              size = .05, inherit.aes = FALSE) +
-  geom_image(data=legend_data, aes(x=x, y=y, image=image), inherit.aes=FALSE) +
-  geom_text(data=legend_data, aes(x=x, y=y, label = text), hjust = 0, nudge_x = 0.1, inherit.aes=FALSE) +
+  geom_image(data=legend_data, aes(y=x, x=y, image=image), inherit.aes=FALSE) +
+  geom_text(data=legend_data, aes(y=x, x=y, label = text), hjust = 0, nudge_x = 1, inherit.aes=FALSE) +
   scale_color_manual("Shots", values = c("No Shot" = "black", "Give" = "white", "Take" = "red")) +
   xlab("") + 
   ylab("") + 
-  coord_cartesian(ylim = c(0, max(beerio_data$Score+3))) +
+  coord_cartesian(xlim = c(min(beerio_data$Score-3), max(beerio_data$Score+3))) +
   theme_mk8() + 
   theme(legend.position = "bottom", legend.key = element_rect(fill = "gray70", color = NA)) + 
   ggtitle("Individual Score Distributions")
+```
+
+```{r, echo=FALSE}
+# beerio_data %>%
+#   ggplot(aes( x = Name, y = Score, fill = Name)) + 
+#   geom_violin(show.legend=FALSE) + 
+#   geom_point(data = beerio_data %>% filter(Give_and_Take == "No Shot"), 
+#              aes(x = Name, y = Score),  alpha = 0.5, size = 3, 
+#              position = position_jitter(width = 0.08, height=0), inherit.aes = FALSE) +
+#   geom_image(data = beerio_data %>%  
+#                filter(!is.na(Punished)) %>%
+#                mutate(Image = case_when(
+#                  Give_and_Take == "Take" ~ "img/bomb.png",
+#                  Give_and_Take == "Give" ~ "img/star.png")) %>% 
+#                select(Name, Score, Image), 
+#              aes(x = Name, y = Score, image = Image), position = position_jitter(width = 0.08, height=0), 
+#              size = .05, inherit.aes = FALSE) +
+#   geom_image(data=legend_data, aes(x=x, y=y, image=image), inherit.aes=FALSE) +
+#   geom_text(data=legend_data, aes(x=x, y=y, label = text), hjust = 0, nudge_x = 0.1, inherit.aes=FALSE) +
+#   scale_color_manual("Shots", values = c("No Shot" = "black", "Give" = "white", "Take" = "red")) +
+#   xlab("") + 
+#   ylab("") + 
+#   coord_cartesian(ylim = c(0, max(beerio_data$Score+3))) +
+#   theme_mk8() + 
+#   theme(legend.position = "bottom", legend.key = element_rect(fill = "gray70", color = NA)) + 
+#   ggtitle("Individual Score Distributions")
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
@@ -253,15 +280,15 @@ median_score <- median(beerio_data$Score, na.rm=T)
 mean_score <- mean(beerio_data$Score, na.rm=T)
 ```
 
-The last plot depicts the overall score distribution with mean (`r round(mean_score,1)`) and median (`r round(median_score,1)`).
+The last plot depicts the overall score distribution with mean (`r round(mean_score,1)`) and median (`r round(median_score,1)`). Green bar sections indicate scores receiving shots.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
 
 shift <- ifelse(median_score > mean_score, TRUE, FALSE) 
 
 beerio_data %>%
   ggplot(aes( x = Score)) + 
-  geom_histogram(fill = "#F8766D") + 
+  geom_bar(fill = "#F8766D", width =1) + 
   ggtitle("Overall Score Distribution") + 
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) + 
   geom_line(data = tibble(x = rep(mean_score, 2),
@@ -278,7 +305,9 @@ beerio_data %>%
                           hjust = as.numeric(c(!shift, shift))),
             aes(x=x,y=y,label=label, fill = label, hjust=hjust), size = 4.5, label.size=0, label.padding=unit(0.3,"lines")) +
   scale_fill_manual(values = c(c("Median"="#C77CFF","Mean"="#00BFC4"))) +
+  geom_bar(data = beerio_data %>% filter(Give_and_Take=="Take"), fill = "#7CAE00", width =1) +
   theme_mk8() +
-  theme(legend.position = "none")
+  ylab("") +
+  theme(legend.position = "none", axis.text.y = element_blank())
 ```
 
