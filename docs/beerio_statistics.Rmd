@@ -74,6 +74,16 @@ This document tracks Beerio game statistics. The last tracked `r ifelse(n_recent
 This table contains scores and events for all logged games. It is searchable and sortable on all columns.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
+winners <- beerio_data %>% 
+  select(Date, Game, Name, Score) %>%
+  group_by(Date, Game) %>%
+  mutate(Winner = ifelse(Score == max(Score), "Winner", "Not Winner")) %>%
+  filter(Winner == "Winner") %>%
+  mutate(n_winners = n()) %>%
+  summarize(Winner = case_when(
+    sum(n_winners) ==1 ~ first(Name),
+    sum(n_winners) > 1 ~ "Tie"
+  ))
 all_games <- beerio_data %>% select(Date, Game, Name, Score) %>%
   pivot_wider(names_from = Name, values_from = Score) %>%
   left_join(beerio_data %>% filter(Give_and_Take == "Take") %>% select(Date, Game, Name, Punishment) %>%
@@ -137,6 +147,12 @@ beerio_table <- beerio_data %>%
   group_by(Name) %>%
   filter(Date==max(Date)) %>%
   summarize(`Recent<br>Average`=round(mean(Score),1))) %>%
+  left_join(winners %>% 
+              ungroup() %>% 
+              filter(Winner != "Tie") %>% 
+              count(Name=Winner) %>% 
+              complete(Name = unique(beerio_data$Name), fill = list(n=0)) %>%
+              rename(Victories = n)) %>%
   mutate(Name = case_when(
     Name == "Chuck" ~ "<img src = 'img/lightblueshyguy.png' height=20> Chuck",
     Name == "Neil" ~ "<img src = 'img/blackshyguy.png' height=20> Neil",
@@ -146,12 +162,13 @@ beerio_table <- beerio_data %>%
     Name == "Chad" ~ "<img src = 'img/donkeykong.png' height=20> Chad",
     TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=20>")
   )) %>%
-  select(Name, `Games<br>Played`,`Overall<br>Average`, `Recent<br>Average`, `Best<br>Score`, `Worst<br>Score`, `Times<br>Punished`, `Times<br>Punisher`)
+  mutate(`Win<br>Percentage` = round(Victories/`Games<br>Played`,2)) %>%
+  select(Name, `Games<br>Played`,Victories, `Win<br>Percentage`, `Overall<br>Average`, `Recent<br>Average`, `Best<br>Score`, `Worst<br>Score`, `Times<br>Punished`, `Times<br>Punisher`)
   datatable(beerio_table, 
             options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
                            columnDefs = 
                              list(
-                               list(className = 'dt-center',  targets = c(1,2,3,4,5,6,7))
+                               list(className = 'dt-center',  targets = c(1,2,3,4,5,6,7,8,9))
                                )
                            ), 
             escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
