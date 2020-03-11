@@ -42,9 +42,9 @@ beerio_data <- beerio_sheet_raw %>%
   mutate(Player_Game = row_number()) %>%
   ungroup() %>%
   mutate(Punishment = ifelse(is.na(Punishment), "None", Punishment)) %>%
-  mutate(Punished = str_remove(str_extract(Punishment, "-> [A-Za-z]*"), "-> ")) %>% 
-  mutate(Punisher = str_remove(str_extract(Punishment, "[A-Za-z]* ->"), " ->")) %>%
-  mutate(Punishment = ifelse(Name == Punished, paste0("Punished by ", ifelse(Punisher==Punished, "themself", Punisher)), NA) ) %>%
+  mutate(Punished = str_remove(str_extract(Punishment, "->( )?[A-Za-z]*"), "->( )?")) %>% 
+  mutate(Punisher = str_remove(str_extract(Punishment, "[A-Za-z]*( )?->"), "( )?->")) %>%
+  mutate(Punishment = ifelse(Name == Punished, paste0("Punished by ", ifelse(Punisher==Punished, "Himself", Punisher)), NA) ) %>%
   mutate(Give_and_Take = case_when(
     is.na(Punished) & is.na(Punisher) ~ "No Shot",
     Punished == Name ~ "Take",
