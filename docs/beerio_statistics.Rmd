@@ -268,8 +268,8 @@ score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=
 The next plot pools the data across evenings to show the change in average score for each player as the evening wears on. Points indicate scores for each match, jittered horizontally to reduce overplotting. Lines are simple linear regressions of score on game number. Note the trend is relatively similar across players. Each additional game is associated with a score difference of `r score_text`. 
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
-legend_data <- tibble(x = max(beerio_data$Game)*0.9,
-                      y = max(beerio_data$Score)*c(1, 0.90),
+legend_data <- tibble(x = max(beerio_data$Game, na.rm=T)*0.9,
+                      y = max(beerio_data$Score, na.rm=T)*c(1, 0.90),
                       image = c("img/star.png","img/bomb.png"),
                       text = c("Gave Shot", "Took Shot"))
 ggplot(beerio_data, aes(x = Game, y = Score)) + 
@@ -303,7 +303,7 @@ The next plot depicts overall score distributions for each player as a violin--a
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
 
 legend_data <- tibble(x = length(unique(beerio_data$Name))*c(1.05, 0.95),
-                      y = max(beerio_data$Score)*0.95,
+                      y = max(beerio_data$Score, na.rm=T)*0.90,
                       image = c("img/star.png","img/bomb.png"),
                       text = c("Gave Shot", "Took Shot"))
                       
