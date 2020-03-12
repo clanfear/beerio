@@ -25,7 +25,7 @@ theme_mk8 <- function(){
 ```
 
 ```{r punishment, include=FALSE}
-shot_index <- c("one", "oh lawd two", "THREE", "FOUR")
+shot_index <- c("one", "oh lawd two", "SAVE ME BABY JESUS THREE", "--ohhhh, body massage--four")
 extract_punishment <-  function(x, type = "text"){ 
     if(x == "None"){
       return(NA_character_)
