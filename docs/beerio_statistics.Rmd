@@ -119,6 +119,7 @@ n_recent_games <- beerio_data %>%
 
 winners <- beerio_data %>% 
   select(Date, Game, Name, Score) %>%
+  filter(!is.na(Score)) %>%
   group_by(Date, Game) %>%
   mutate(Winner = ifelse(Score == max(Score), "Winner", "Not Winner")) %>%
   filter(Winner == "Winner") %>%
