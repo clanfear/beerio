@@ -484,16 +484,44 @@ map_data <- beerio_rounds %>% pivot_longer(Neil:Korl) %>%
   rename(Player = name)
 ```
 
-The first plot show average scores for each player on each map. Courses are sorted by their overall mean score--the map with the current highest mean score is `r str_replace(levels(map_data$Map)[8], "\n", " ")`.
+The next table displays average scores for each player on each course.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
-ggplot(map_data, aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
-  scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
-  geom_col(position="dodge") + theme_mk8() + theme(legend.position = "bottom") + ylab("") + ggtitle("Average Scores by Map", subtitle = "For each player") +
-  scale_x_continuous(breaks = scales::pretty_breaks(3))
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+map_data_table <- map_data %>% ungroup() %>% mutate(`Average Score` = round(`Average Score`,1 )) %>% pivot_wider(names_from = Player, values_from = `Average Score`) %>% mutate(Map = str_replace(Map, "\n", " "))
+DT::datatable({
+  map_data_table %>% mutate_all(~as.character(.))
+},
+callback = JS("
+  $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
+    var retVal;
+        if( x === '' || $.isEmptyObject(x)) x = 1000;
+    if( y === '' || $.isEmptyObject(y)) y = 1000;
+    x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+    y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+    if (x==y) retVal= 0; 
+    else retVal = (x>y) ? 1 : -1; 
+    return retVal;
+  };
+  $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
+  var retVal;
+  x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+  y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+  if (x==y) retVal= 0; 
+  else retVal = (x>y) ? 1 : -1; 
+  return retVal;
+  };
+  "),
+options = list(
+  autoWidth = TRUE,
+  fillContainer = TRUE,
+  pageLength = 8, paging=FALSE, info=FALSE, searching=FALSE, lengthChange=TRUE,
+  aoColumnDefs = list(
+    list(width = "120px", className = 'dt-center',  targets = c(0)),
+    list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(1,2,3)))), 
+  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 ```
 
-The last plot repeats these dat but breaks them out by individuals to simplify comparing individual performance across maps.
+The first plot show average scores for each player on each map. Courses are sorted by their overall mean score--the map with the current highest mean score is `r str_replace(levels(map_data$Map)[8], "\n", " ")`.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
 beerio_rounds %>% pivot_longer(Neil:Korl) %>%
@@ -518,5 +546,57 @@ beerio_rounds %>% pivot_longer(Neil:Korl) %>%
   scale_x_continuous(breaks = scales::pretty_breaks(3)) +
   geom_col(position="dodge") + theme_mk8() + theme(legend.position = "none") + ylab("") + ggtitle("Average Scores by Map", subtitle = "For each player")
   
+```
+
+
+```{r, eval=FALSE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
+# ggplot(map_data, aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
+#   scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
+#   geom_col(position="dodge") + theme_mk8() + theme(legend.position = "bottom") + ylab("") + ggtitle("Average Scores by Map", subtitle = "For each player") +
+#   scale_x_continuous(breaks = scales::pretty_breaks(3))
+```
+
+```{r, include=FALSE}
+deviation_data <- map_data %>% group_by(Player) %>% mutate(`Average Score` = `Average Score` - mean(`Average Score`))
+neil_ssk <- deviation_data %>% filter(Map=="Sweet Sweet\nKingdom" & Player == "Neil") %>% pull(`Average Score`) %>% round(1)
+```
+
+The next plot shows differences between each player's overall average score and their average for the given course. For example, the plot indicates the difference between Neil's overall average and his Sweet Sweet Kingdom average is `r neil_ssk`.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
+ggplot(deviation_data, aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
+  scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
+  geom_col(position="dodge") + theme_mk8() + theme(legend.position = "bottom") + ylab("") + ggtitle("Player Averages by Map", subtitle = "Deviations from player average") +
+  scale_x_continuous(breaks = scales::pretty_breaks(3))
+```
+
+
+
+The last plot provides an alternate visualization of the same information.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
+beerio_rounds %>% pivot_longer(Neil:Korl) %>%
+  filter(!is.na(name) & !is.na(value)) %>% 
+  mutate(Map = fct_recode(Map, 
+                          `Luigi's\nMansion`="LM",
+                          `Dragon\nPalace`="DP",
+                          `Battle\nCourse 1`="BC",
+                          `Battle\nStadium`="BS",
+                          `Sweet Sweet\nKingdom`="SK",
+                          `Wuhu\nTown`="WT",
+                          `Urchin\nUnderpass`="UU",
+                          `Lunar\nColony`="LC"
+                          )) %>%
+  mutate(Map = fct_reorder(Map, value, mean)) %>%
+  group_by(name, Map) %>% 
+  summarize(`Average Score` = mean(value)) %>%
+  rename(Player = name) %>%
+  group_by(Player) %>%
+  mutate(`Average Score` = `Average Score` - mean(`Average Score`)) %>%
+  ggplot(aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
+  facet_wrap(~ Player) +
+  scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
+  scale_x_continuous(breaks = scales::pretty_breaks(3)) +
+  geom_col(position="dodge") + theme_mk8() + theme(legend.position = "none") + ylab("") + ggtitle("Player Average by Map", subtitle = "Deviations from player average")
 ```
 
