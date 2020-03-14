@@ -256,7 +256,7 @@ beerio_data %>%
   scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +
   ylim(0, NA) +
   ggtitle("Beerio Scores", subtitle = "Over the course of evenings") +
-  theme_mk8() + theme(legend.position="bottom")
+  theme_mk8() + theme(legend.position="bottom", panel.grid.minor.y = element_blank())
 
 score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=TRUE) %>% 
   select(term, estimate, conf.low, conf.high) %>% filter(term == "Game") %>%
@@ -266,7 +266,7 @@ score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=
 
 ```
 
-The next plot pools the data across evenings to show the change in average score for each player as the evening wears on. Points indicate scores for each match, jittered horizontally to reduce overplotting. Lines are simple linear regressions of score on game number. Note the trend is relatively similar across players. Each additional game is associated with a score difference of `r score_text`. 
+The next plot pools the data across evenings to show the change in average score for each player as the evening wears on. Points indicate scores for each match, jittered horizontally to reduce overplotting. In a linear model, each additional game is associated with a score difference of `r score_text`. The relationship between game and score appears nonlinear, however. Accordingly, the lines on the plot are loess splines of score on game number. These splines represent nonparametric trends--they will, however, tend to be overly flexible with few data points.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 legend_data <- tibble(x = max(beerio_data$Game, na.rm=T)*0.9,
@@ -274,7 +274,7 @@ legend_data <- tibble(x = max(beerio_data$Game, na.rm=T)*0.9,
                       image = c("img/star.png","img/bomb.png"),
                       text = c("Gave Shot", "Took Shot"))
 ggplot(beerio_data, aes(x = Game, y = Score)) + 
-  geom_smooth(method="lm", aes(color=Name, fill =Name), size = 2, se=FALSE) + 
+  geom_smooth(method="loess", aes(color=Name, fill =Name), size = 2, se=FALSE) + 
   geom_point(data = beerio_data %>%  
                filter(is.na(Give) & is.na(Take)), aes(fill=Name), size =3, shape  = 21, color = "black", position = position_jitter(height=0, width=0.1)) + 
   theme_mk8() + ylab("") + scale_fill_discrete("") +
@@ -296,7 +296,7 @@ ggplot(beerio_data, aes(x = Game, y = Score)) +
   geom_text(data=legend_data, aes(x=x, y=y, label = text), hjust = 0, nudge_x = 0.25, inherit.aes=FALSE) +
   ggtitle("Beerio Score Over Games", subtitle = "Regressed on game number") + 
   coord_cartesian(ylim = c(0, max(beerio_data$Score+3))) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom", panel.grid.minor.y = element_blank())
 ```
 
 The next plot depicts overall score distributions for each player as a violin--a symmetrical density plot. Wider cross-sections indicate more games with scores in that range. Points indicate scores for each match, jittered horizontally to reduce overplotting. The line inside the violin denotes the median score.
@@ -330,7 +330,7 @@ beerio_data %>%
   scale_y_discrete(limits = rev(c("Chuck", "Neil", "Shawn", "Steve"))) +
   coord_cartesian(xlim = c(min(beerio_data$Score-3), max(beerio_data$Score+3))) +
   theme_mk8() + 
-  theme(legend.position = "bottom", legend.key = element_rect(fill = "gray70", color = NA)) + 
+  theme(legend.position = "bottom", legend.key = element_rect(fill = "gray70", color = NA), panel.grid = element_blank()) + 
   ggtitle("Individual Score Distributions")
 ```
 
@@ -394,7 +394,8 @@ beerio_data %>%
   geom_bar(data = beerio_data %>% filter(!is.na(Take)), fill = "#7CAE00", width =1) +
   theme_mk8() +
   ylab("") +
-  theme(legend.position = "none", axis.text.y = element_blank())
+  geom_hline(yintercept=0, color = "gray80") +
+  theme(legend.position = "none", axis.text.y = element_blank(), panel.grid = element_blank())
 ```
 
 # Round Data
@@ -579,7 +580,7 @@ beerio_rounds %>% pivot_longer(Neil:Korl) %>%
   # scale_y_discrete(limits = rev(c("Chuck", "Neil", "Shawn", "Steve"))) +
   # coord_cartesian(xlim = c(min(beerio_data$Score-3), max(beerio_data$Score+3))) +
   theme_mk8() + 
-  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 0, color = "gray80") +
   theme(legend.position = "bottom", axis.text.y = element_blank(), panel.grid = element_blank()) + 
   ggtitle("Map Score Distributions", subtitle = "By player")
 ```
@@ -594,7 +595,8 @@ The next plot shows differences between each player's overall average score and 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 ggplot(deviation_data, aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
   scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
-  geom_col(position="dodge") + theme_mk8() + theme(legend.position = "bottom") + ylab("") + ggtitle("Player Averages by Map", subtitle = "Deviations from player average") +
+  geom_col(position="dodge") + theme_mk8() + theme(legend.position = "bottom", panel.grid = element_blank()) + ylab("") + ggtitle("Player Averages by Map", subtitle = "Deviations from player average") +
+  geom_hline(yintercept = seq(1.5, 7.5, by = 1), color = "gray80") +
   scale_x_continuous(breaks = scales::pretty_breaks(3))
 ```
 
@@ -622,9 +624,12 @@ beerio_rounds %>% pivot_longer(Neil:Korl) %>%
   group_by(Player) %>%
   mutate(`Average Score` = `Average Score` - mean(`Average Score`)) %>%
   ggplot(aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
-  facet_grid(1 ~ Player) +
+  facet_grid(. ~ Player) +
   scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
   scale_x_continuous(breaks = scales::pretty_breaks(3)) +
-  geom_col(position="dodge") + theme_mk8() + theme(legend.position = "none") + ylab("") + ggtitle("Player Average by Map", subtitle = "Deviations from player average")
+  geom_col(position="dodge") + theme_mk8() + 
+  geom_hline(yintercept = seq(1.5, 7.5, by = 1), color = "gray80") +
+  theme(legend.position = "none", panel.grid = element_blank(), panel.spacing.x = unit(0, "lines")) + ylab("") + 
+  ggtitle("Player Average by Map", subtitle = "Deviations from player average")
 ```
 
