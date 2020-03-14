@@ -239,7 +239,7 @@ beerio_table <- beerio_data %>%
 
 The first figure depicts Beerio scores over games in each day. Punishments are indicated by a blue shell. Days with only one game are excluded.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 beerio_data %>%
   group_by(Date) %>%
   filter(max(Game) > 1) %>%
@@ -268,7 +268,7 @@ score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=
 
 The next plot pools the data across evenings to show the change in average score for each player as the evening wears on. Points indicate scores for each match, jittered horizontally to reduce overplotting. Lines are simple linear regressions of score on game number. Note the trend is relatively similar across players. Each additional game is associated with a score difference of `r score_text`. 
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 legend_data <- tibble(x = max(beerio_data$Game, na.rm=T)*0.9,
                       y = max(beerio_data$Score, na.rm=T)*c(1, 0.90),
                       image = c("img/star.png","img/bomb.png"),
@@ -301,7 +301,7 @@ ggplot(beerio_data, aes(x = Game, y = Score)) +
 
 The next plot depicts overall score distributions for each player as a violin--a symmetrical density plot. Wider cross-sections indicate more games with scores in that range. Points indicate scores for each match, jittered horizontally to reduce overplotting. The line inside the violin denotes the median score.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 
 legend_data <- tibble(x = length(unique(beerio_data$Name))*c(1.05, 0.95),
                       y = max(beerio_data$Score, na.rm=T)*0.90,
@@ -368,7 +368,7 @@ mean_score <- mean(beerio_data$Score, na.rm=T)
 
 The last plot depicts the overall score distribution with mean (`r round(mean_score,1)`) and median (`r round(median_score,1)`). Green bar sections indicate scores receiving shots.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 
 shift <- ifelse(median_score > mean_score, TRUE, FALSE) 
 
@@ -523,9 +523,35 @@ options = list(
   escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 ```
 
-The first plot show average scores for each player on each map. Courses are sorted by their overall mean score--the map with the current highest mean score is `r str_replace(levels(map_data$Map)[8], "\n", " ")`.
+The first plot shows the full distribution of scores for each map colored by player. Courses are sorted by their overall mean score--the map with the current highest mean score is `r str_replace(levels(map_data$Map)[8], "\n", " ")`.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
+```{r, eval=FALSE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
+# beerio_rounds %>% pivot_longer(Neil:Korl) %>%
+#   filter(!is.na(name) & !is.na(value)) %>% 
+#   mutate(Map = fct_recode(Map, 
+#                           `Luigi's\nMansion`="LM",
+#                           `Dragon\nPalace`="DP",
+#                           `Battle\nCourse 1`="BC",
+#                           `Battle\nStadium`="BS",
+#                           `Sweet Sweet\nKingdom`="SK",
+#                           `Wuhu\nTown`="WT",
+#                           `Urchin\nUnderpass`="UU",
+#                           `Lunar\nColony`="LC"
+#                           )) %>%
+#   mutate(Map = fct_reorder(Map, value, mean)) %>%
+#   group_by(name, Map) %>% 
+#   summarize(`Average Score` = mean(value)) %>%
+#   rename(Player = name) %>%
+#   ggplot(aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
+#   facet_grid( 1 ~ Player) +
+#   scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
+#   scale_x_continuous(breaks = scales::pretty_breaks(3)) +
+#   geom_col(position="dodge") + theme_mk8() + theme(legend.position = "none") + ylab("") + ggtitle("Average Scores by Map", subtitle = "For each player")
+#   
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=8.5, fig.align='center', dev="png", dpi = 300}
 beerio_rounds %>% pivot_longer(Neil:Korl) %>%
   filter(!is.na(name) & !is.na(value)) %>% 
   mutate(Map = fct_recode(Map, 
@@ -533,29 +559,29 @@ beerio_rounds %>% pivot_longer(Neil:Korl) %>%
                           `Dragon\nPalace`="DP",
                           `Battle\nCourse 1`="BC",
                           `Battle\nStadium`="BS",
-                          `Sweet Sweet\nKingdom`="SK",
+                          `Sweet\nSweet\nKingdom`="SK",
                           `Wuhu\nTown`="WT",
                           `Urchin\nUnderpass`="UU",
                           `Lunar\nColony`="LC"
                           )) %>%
-  mutate(Map = fct_reorder(Map, value, mean)) %>%
-  group_by(name, Map) %>% 
-  summarize(`Average Score` = mean(value)) %>%
-  rename(Player = name) %>%
-  ggplot(aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
-  facet_grid( 1 ~ Player) +
+  mutate(Map = fct_rev(fct_reorder(Map, value, mean))) %>%
+  rename(Score = value, Player = name) %>%
+  count(Map, Player, Score) %>%
+  ggplot(aes(x = Score, y = n, fill = Player)) + 
+  geom_col() +
+  facet_grid( Map ~ ., switch = "y") +
+  #geom_violin(show.legend=FALSE, draw_quantiles = c(0.5), legend.show=FALSE) + 
+  #geom_point(aes(y = Map, x = Score, fill = Player),  alpha = 0.5, size = 3, 
+  #           position = position_jitter(height = 0.1, width=0.1), inherit.aes = FALSE, shape  = 21, color = "black") +
   scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
-  scale_x_continuous(breaks = scales::pretty_breaks(3)) +
-  geom_col(position="dodge") + theme_mk8() + theme(legend.position = "none") + ylab("") + ggtitle("Average Scores by Map", subtitle = "For each player")
-  
-```
-
-
-```{r, eval=FALSE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
-# ggplot(map_data, aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
-#   scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
-#   geom_col(position="dodge") + theme_mk8() + theme(legend.position = "bottom") + ylab("") + ggtitle("Average Scores by Map", subtitle = "For each player") +
-#   scale_x_continuous(breaks = scales::pretty_breaks(3))
+  xlab("") + 
+  ylab("") +
+  # scale_y_discrete(limits = rev(c("Chuck", "Neil", "Shawn", "Steve"))) +
+  # coord_cartesian(xlim = c(min(beerio_data$Score-3), max(beerio_data$Score+3))) +
+  theme_mk8() + 
+  geom_hline(yintercept = 0) +
+  theme(legend.position = "bottom", axis.text.y = element_blank(), panel.grid = element_blank()) + 
+  ggtitle("Map Score Distributions", subtitle = "By player")
 ```
 
 ```{r, include=FALSE}
@@ -565,7 +591,7 @@ neil_ssk <- deviation_data %>% filter(Map=="Sweet Sweet\nKingdom" & Player == "N
 
 The next plot shows differences between each player's overall average score and their average for the given course. For example, the plot indicates the difference between Neil's overall average and his Sweet Sweet Kingdom average is `r neil_ssk`.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 ggplot(deviation_data, aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
   scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
   geom_col(position="dodge") + theme_mk8() + theme(legend.position = "bottom") + ylab("") + ggtitle("Player Averages by Map", subtitle = "Deviations from player average") +
@@ -576,7 +602,7 @@ ggplot(deviation_data, aes(x = `Average Score`, y = Map, group = Player, fill = 
 
 The last plot provides an alternate visualization of the same information.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 200}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 beerio_rounds %>% pivot_longer(Neil:Korl) %>%
   filter(!is.na(name) & !is.na(value)) %>% 
   mutate(Map = fct_recode(Map, 
