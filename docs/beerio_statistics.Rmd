@@ -154,7 +154,7 @@ all_games <- beerio_sheet_raw %>%
 # datatable(all_games, options = list(pageLength = 10, scrollY=FALSE, paging=TRUE, info=TRUE), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
 
 DT::datatable({
-  all_games %>% mutate_all(~as.character(.))
+  all_games %>% mutate_all(~as.character(.)) %>% select(Date, Game, Chuck, Neil, Shawn, Steve, Punishment)
 },
 callback = JS("
   $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
@@ -327,6 +327,7 @@ beerio_data %>%
   scale_color_manual("Shots", values = c("No Shot" = "black", "Give" = "white", "Take" = "red")) +
   xlab("") + 
   ylab("") +
+  scale_y_discrete(limits = rev(c("Chuck", "Neil", "Shawn", "Steve"))) +
   coord_cartesian(xlim = c(min(beerio_data$Score-3), max(beerio_data$Score+3))) +
   theme_mk8() + 
   theme(legend.position = "bottom", legend.key = element_rect(fill = "gray70", color = NA)) + 
@@ -427,7 +428,7 @@ round_table_data <- beerio_rounds %>%
   mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) 
 
 DT::datatable({
-  round_table_data %>% mutate_all(~as.character(.))
+  round_table_data %>% mutate_all(~as.character(.)) %>% select(Date, Game, Round, Map, Chuck, Neil, Shawn, Steve, Shot)
 },
 callback = JS("
   $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
