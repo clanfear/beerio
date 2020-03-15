@@ -524,7 +524,52 @@ options = list(
   escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 ```
 
-The first plot shows the full distribution of scores for each map colored by player. Courses are sorted by their overall mean score--the map with the current highest mean score is `r str_replace(levels(map_data$Map)[8], "\n", " ")`.
+The first plot depicts scores over rounds across all nights. That is, the first round of the second match is treated as round 5. Points are jittered for visibility.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
+
+beerio_rounds_long <- beerio_rounds %>% 
+  pivot_longer(Neil:Korl) %>% filter(name != "Korl") %>% rename(Score = value, Name = name) %>%
+  mutate(Round = Round + (Game-1)*4)
+
+
+ggplot(beerio_rounds_long, aes(x = Round, y = Score, fill = Name, color = Name)) + 
+  geom_smooth(method="loess", size = 2, se=FALSE) + 
+  geom_point(size = 3, alpha= 0.5, shape  = 21, color = "black", position = position_jitter(height=0.5, width=0.2)) + 
+  theme_mk8() + ylab("") + 
+  scale_fill_discrete("") +
+  scale_color_discrete("") +
+  ggtitle("Beerio Score Over Rounds") + 
+  coord_cartesian(ylim = c(0, max(beerio_rounds_long$Score, na.rm=TRUE)+3)) +
+  theme(legend.position = "bottom", panel.grid.minor.y = element_blank())
+```
+
+The next plot facets the above information into separate days. The lines will be somewhat over-fit as individuals only have one data point per round.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
+
+beerio_rounds_long <- beerio_rounds %>% 
+  pivot_longer(Neil:Korl) %>% filter(name != "Korl") %>%
+  rename(Score = value, Name = name) %>%
+  filter(!is.na(Score)) %>%
+  mutate(Round = Round + (Game-1)*4) %>% 
+  mutate(Day = str_replace(format(Date, "%b %e"), "  ", " ")) %>%
+  mutate(Day = fct_reorder(Day, Date, .desc=T))
+
+
+ggplot(beerio_rounds_long, aes(x = Round, y = Score, fill = Name, color = Name)) + 
+  facet_grid(. ~ Day) +
+   geom_smooth(method="loess", size = 2, se=FALSE) + 
+  geom_point(size = 3, alpha= 0.5, shape  = 21, color = "black") + 
+  theme_mk8() + ylab("") + 
+  scale_fill_discrete("") +
+  scale_color_discrete("") +
+  ggtitle("Beerio Score Over Rounds", subtitle = "By date") + 
+  coord_cartesian(ylim = c(0, max(beerio_rounds_long$Score, na.rm=TRUE)+3)) +
+  theme(legend.position = "bottom", panel.grid.minor.y = element_blank())
+```
+
+The next plot shows the full distribution of scores for each map colored by player. Courses are sorted by their overall mean score--the map with the current highest mean score is `r str_replace(levels(map_data$Map)[8], "\n", " ")`.
 
 ```{r, eval=FALSE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 # beerio_rounds %>% pivot_longer(Neil:Korl) %>%
@@ -602,7 +647,7 @@ ggplot(deviation_data, aes(x = `Average Score`, y = Map, group = Player, fill = 
 
 
 
-The last plot provides an alternate visualization of the same information.
+This plot provides an alternate visualization of the same information.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 beerio_rounds %>% pivot_longer(Neil:Korl) %>%
@@ -632,4 +677,5 @@ beerio_rounds %>% pivot_longer(Neil:Korl) %>%
   theme(legend.position = "none", panel.grid = element_blank(), panel.spacing.x = unit(0, "lines")) + ylab("") + 
   ggtitle("Player Average by Map", subtitle = "Deviations from player average")
 ```
+
 
