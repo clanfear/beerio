@@ -429,6 +429,7 @@ round_table_data <- beerio_rounds %>%
                           )) %>%
   mutate(Map = str_replace(as.character(Map), "\n", " ")) %>%
   select(-Korl, -Note) %>%
+  arrange(desc(Date), Game, Round) %>%
   mutate(date_dummy = Date) %>%
   mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) 
 
