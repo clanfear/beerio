@@ -147,14 +147,16 @@ all_games <- beerio_sheet_raw %>%
   mutate(Game = row_number()) %>%
   arrange(desc(Date, Game)) %>%
   ungroup() %>%
+  mutate(date_dummy = Date) %>%
   mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) %>%
   mutate(Punishment = ifelse(is.na(Punishment), "None", Punishment)) %>%
   mutate(Punishment = map_chr(Punishment, ~extract_punishment(., type = "text"))) %>%
   select(Date, Game, everything(), Punishment)
 # datatable(all_games, options = list(pageLength = 10, scrollY=FALSE, paging=TRUE, info=TRUE), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
 
+
 DT::datatable({
-  all_games %>% mutate_all(~as.character(.)) %>% select(Date, Game, Chuck, Neil, Shawn, Steve, Punishment)
+  all_games %>% mutate_all(~as.character(.)) %>% select(Date, Game, Chuck, Neil, Shawn, Steve, Punishment, date_dummy)
 },
 callback = JS("
   $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
@@ -181,9 +183,10 @@ options = list(
   fillContainer = TRUE,
   pageLength = 10, paging=TRUE, info=TRUE, searching=TRUE, lengthChange=TRUE,
   aoColumnDefs = list(
-    list(width = "45px", className = 'dt-center',  targets = c(1)),
+    list(width = "45px", className = 'dt-center',  targets = c(1), orderData = 7),
     list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(2,3,4,5)),
-    list(width = '250px', bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(6)))
+    list(width = '250px', bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(6)),
+    list(targets = 7, visible =FALSE))
 ), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 
 ```
@@ -426,10 +429,12 @@ round_table_data <- beerio_rounds %>%
                           )) %>%
   mutate(Map = str_replace(as.character(Map), "\n", " ")) %>%
   select(-Korl, -Note) %>%
+  mutate(date_dummy = Date) %>%
   mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) 
 
+
 DT::datatable({
-  round_table_data %>% mutate_all(~as.character(.)) %>% select(Date, Game, Round, Map, Chuck, Neil, Shawn, Steve, Shot)
+  round_table_data %>% mutate_all(~as.character(.)) %>% select(Date, Game, Round, Map, Chuck, Neil, Shawn, Steve, Shot, date_dummy)
 },
 callback = JS("
   $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
@@ -456,11 +461,12 @@ options = list(
   fillContainer = TRUE,
   pageLength = 10, paging=TRUE, info=TRUE, searching=TRUE, lengthChange=TRUE,
   aoColumnDefs = list(
-    list(width = "120px", className = 'dt-center',  targets = c(0)),
+    list(width = "120px", className = 'dt-center',  targets = c(0), orderData=9),
     list(width = "40px", className = 'dt-center',  targets = c(1)),
     list(width = '80px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(3)),
     list(width = '40px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(2,4,5,6,7)),
-    list(width = '120px', bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(8)))
+    list(width = '120px', bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(8)),
+    list(targets = 9, visible =FALSE))
 ), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 
 ```
@@ -491,6 +497,7 @@ The next table displays average scores for each player on each course.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 map_data_table <- map_data %>% ungroup() %>% mutate(`Average Score` = round(`Average Score`,1 )) %>% pivot_wider(names_from = Player, values_from = `Average Score`) %>% mutate(Map = str_replace(Map, "\n", " "))
+
 DT::datatable({
   map_data_table %>% mutate_all(~as.character(.))
 },
