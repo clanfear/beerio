@@ -566,7 +566,7 @@ beerio_rounds_long <- beerio_rounds %>%
 
 
 ggplot(beerio_rounds_long, aes(x = Round, y = Score, fill = Name, color = Name)) + 
-  facet_grid(. ~ Day) +
+  facet_grid(. ~ Day, scales = "free_x") +
    geom_smooth(method="loess", size = 2, se=FALSE) + 
   geom_point(size = 3, alpha= 0.5, shape  = 21, color = "black") + 
   theme_mk8() + ylab("") + 
