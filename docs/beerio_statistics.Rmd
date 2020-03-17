@@ -686,4 +686,12 @@ beerio_rounds %>% pivot_longer(Neil:Korl) %>%
   ggtitle("Player Average by Map", subtitle = "Deviations from player average")
 ```
 
+```{r, eval=FALSE, echo=FALSE}
+beerio_rounds %>%
+  mutate(Chuck_Present = as.numeric(!is.na(Chuck)), 
+         Shawn_Present = as.numeric(!is.na(Shawn)),
+         Steve_Present = as.numeric(!is.na(Steve))) %>%
+  lm(Shawn ~ Map + Round, data =.) %>% summary()
+```
+
 
