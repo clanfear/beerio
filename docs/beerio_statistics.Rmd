@@ -682,7 +682,7 @@ beerio_rounds %>% pivot_longer(Neil:Korl) %>%
   scale_x_continuous(breaks = scales::pretty_breaks(3)) +
   geom_col(position="dodge") + theme_mk8() + 
   geom_hline(yintercept = seq(1.5, 7.5, by = 1), color = "gray80") +
-  theme(legend.position = "none", panel.grid = element_blank(), panel.spacing.x = unit(0, "lines")) + ylab("") + 
+  theme(legend.position = "none", panel.grid = element_blank()) + ylab("") + 
   ggtitle("Player Average by Map", subtitle = "Deviations from player average")
 ```
 
