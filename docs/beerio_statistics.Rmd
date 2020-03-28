@@ -50,7 +50,10 @@ extract_punishment <-  function(x, type = "text"){
     } else if (type == "punisher"){
       punish_count_df %>%  mutate(give = ifelse(take==give, NA, give)) %>% select(Punisher=give, Shots=n) %>% return(.)
     }
-}}
+    }}
+
+player_colors <- c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF", "Karly" = "#BBBBBB")
+
 ```
 
 ```{r processing, include=FALSE}
@@ -222,11 +225,11 @@ beerio_table <- beerio_data %>%
     Name == "Neil" ~ "<img src = 'img/blackshyguy.png' height=20> Neil",
     Name == "Shawn" ~ "<img src = 'img/catpeach.png' height=20> Shawn",
     Name == "Steve" ~ "<img src = 'img/toadette.png' height=20> Steve",
-    Name == "Korl" ~ "<img src = 'img/lakitu.png' height=20> Korl",
-    Name == "Chad" ~ "<img src = 'img/donkeykong.png' height=20> Chad",
+    Name == "Karly" ~ "<img src = 'img/lakitu.png' height=20> Korl",
+    Name == "Chad"  ~ "<img src = 'img/donkeykong.png' height=20> Chad",
     TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=20>")
   )) %>%
-  mutate(`Win<br>Percentage` = round(Victories/`Games<br>Played`,2)) %>%
+  mutate(`Win<br>Percentage` = paste0(round(Victories/`Games<br>Played`,3)*100, "%" )) %>%
   select(Name, `Games<br>Played`,Victories, `Win<br>Percentage`, `Overall<br>Average`, `Recent<br>Average`, `Best<br>Score`, `Worst<br>Score`, `Times<br>Punished`, `Times<br>Punisher`)
   datatable(beerio_table, 
             options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
@@ -245,7 +248,7 @@ The first figure depicts Beerio scores over games in each day. Punishments are i
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 beerio_data %>%
   group_by(Date) %>%
-  filter(max(Game) > 1) %>%
+  filter(max(Game) > 1 & Name != "Karly") %>%
   ungroup() %>%
   arrange(desc(Date)) %>%
   mutate(Day = fct_reorder(Day, Date, .desc=T)) %>%
@@ -276,18 +279,18 @@ legend_data <- tibble(x = max(beerio_data$Game, na.rm=T)*0.9,
                       y = max(beerio_data$Score, na.rm=T)*c(1, 0.90),
                       image = c("img/star.png","img/bomb.png"),
                       text = c("Gave Shot", "Took Shot"))
-ggplot(beerio_data, aes(x = Game, y = Score)) + 
+ggplot(beerio_data %>% filter(Name != "Karly"), aes(x = Game, y = Score)) + 
   geom_smooth(method="loess", aes(color=Name, fill =Name), size = 2, se=FALSE) + 
-  geom_point(data = beerio_data %>%  
+  geom_point(data = beerio_data %>% filter(Name != "Karly") %>%  
                filter(is.na(Give) & is.na(Take)), aes(fill=Name), size =3, shape  = 21, color = "black", position = position_jitter(height=0, width=0.1)) + 
   theme_mk8() + ylab("") + scale_fill_discrete("") +
   scale_color_discrete("") +
-  geom_point(data = beerio_data %>%  
+  geom_point(data = beerio_data %>% filter(Name != "Karly") %>%  
                filter(!is.na(Take) | !is.na(Give)) %>% 
                select(Name, Game, Score, Give, Take), 
              aes(x = Game, y = Score, color = Name), 
              size = 12, inherit.aes = FALSE, alpha = 0.5) +
-  geom_image(data = beerio_data %>%  
+  geom_image(data = beerio_data %>% filter(Name != "Karly") %>%  
                filter(!is.na(Take) | !is.na(Give)) %>%
                mutate(Image = case_when(
                  !is.na(Take) ~ "img/bomb.png",
@@ -311,7 +314,7 @@ legend_data <- tibble(x = length(unique(beerio_data$Name))*c(1.05, 0.95),
                       image = c("img/star.png","img/bomb.png"),
                       text = c("Gave Shot", "Took Shot"))
                       
-beerio_data %>%
+beerio_data %>% filter(Name != "Karly") %>%
   ggplot(aes( y = Name, x = Score, fill = Name)) + 
   geom_violin(show.legend=FALSE, draw_quantiles = c(0.5)) + 
   geom_point(data = beerio_data %>% filter(is.na(Give) & is.na(Take)), 
@@ -375,7 +378,7 @@ The last plot depicts the overall score distribution with mean (`r round(mean_sc
 
 shift <- ifelse(median_score > mean_score, TRUE, FALSE) 
 
-beerio_data %>%
+beerio_data %>% filter(Name != "Karly") %>%
   ggplot(aes( x = Score)) + 
   geom_bar(fill = "#F8766D", width =1) + 
   ggtitle("Overall Score Distribution") + 
@@ -428,7 +431,7 @@ round_table_data <- beerio_rounds %>%
                           `Lunar\nColony`="LC"
                           )) %>%
   mutate(Map = str_replace(as.character(Map), "\n", " ")) %>%
-  select(-Korl, -Note) %>%
+  select(-Note) %>%
   arrange(desc(Date), Game, Round) %>%
   mutate(date_dummy = Date) %>%
   mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) 
@@ -475,7 +478,7 @@ options = list(
 
 
 ```{r, include=FALSE}
-map_data <- beerio_rounds %>% pivot_longer(Neil:Korl) %>%
+map_data <- beerio_rounds %>% pivot_longer(Neil:Steve) %>%
   filter(!is.na(name) & !is.na(value)) %>% 
   mutate(Map = fct_recode(Map, 
                           `Luigi's\nMansion`="LM",
@@ -537,7 +540,7 @@ The first plot depicts scores over rounds across all nights. That is, the first 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 
 beerio_rounds_long <- beerio_rounds %>% 
-  pivot_longer(Neil:Korl) %>% filter(name != "Korl") %>% rename(Score = value, Name = name) %>%
+  pivot_longer(Neil:Karly) %>% filter(name != "Karly") %>% rename(Score = value, Name = name) %>%
   mutate(Round = Round + (Game-1)*4)
 
 
@@ -557,7 +560,8 @@ The next plot facets the above information into separate days. The lines will be
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 
 beerio_rounds_long <- beerio_rounds %>% 
-  pivot_longer(Neil:Korl) %>% filter(name != "Korl") %>%
+  pivot_longer(Neil:Karly) %>% 
+  filter(name != "Karly") %>%
   rename(Score = value, Name = name) %>%
   filter(!is.na(Score)) %>%
   mutate(Round = Round + (Game-1)*4) %>% 
@@ -566,7 +570,7 @@ beerio_rounds_long <- beerio_rounds %>%
 
 
 ggplot(beerio_rounds_long, aes(x = Round, y = Score, fill = Name, color = Name)) + 
-  facet_grid(. ~ Day, scales = "free_x") +
+  facet_wrap(~ Day, scales = "free_x") +
    geom_smooth(method="loess", size = 2, se=FALSE) + 
   geom_point(size = 3, alpha= 0.5, shape  = 21, color = "black") + 
   theme_mk8() + ylab("") + 
@@ -606,8 +610,8 @@ The next plot shows the full distribution of scores for each map colored by play
 
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=8.5, fig.align='center', dev="png", dpi = 300}
-beerio_rounds %>% pivot_longer(Neil:Korl) %>%
-  filter(!is.na(name) & !is.na(value)) %>% 
+beerio_rounds %>% pivot_longer(Neil:Karly) %>%
+  filter(!is.na(name) & !is.na(value) & name != "Karly") %>% 
   mutate(Map = fct_recode(Map, 
                           `Luigi's\nMansion`="LM",
                           `Dragon\nPalace`="DP",
@@ -639,7 +643,7 @@ beerio_rounds %>% pivot_longer(Neil:Korl) %>%
 ```
 
 ```{r, include=FALSE}
-deviation_data <- map_data %>% group_by(Player) %>% mutate(`Average Score` = `Average Score` - mean(`Average Score`))
+deviation_data <- map_data %>% group_by(Player) %>% mutate(`Average Score` = `Average Score` - mean(`Average Score`)) %>% filter(Player != "Karly")
 neil_ssk <- deviation_data %>% filter(Map=="Sweet Sweet\nKingdom" & Player == "Neil") %>% pull(`Average Score`) %>% round(1)
 ```
 
@@ -658,7 +662,8 @@ ggplot(deviation_data, aes(x = `Average Score`, y = Map, group = Player, fill = 
 This plot provides an alternate visualization of the same information.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
-beerio_rounds %>% pivot_longer(Neil:Korl) %>%
+beerio_rounds %>% pivot_longer(Neil:Karly) %>%
+  filter(name != "Karly") %>%
   filter(!is.na(name) & !is.na(value)) %>% 
   mutate(Map = fct_recode(Map, 
                           `Luigi's\nMansion`="LM",
