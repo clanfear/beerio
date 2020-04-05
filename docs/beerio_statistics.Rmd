@@ -243,25 +243,28 @@ beerio_table <- beerio_data %>%
 
 # Figures
 
-The first figure depicts Beerio scores over games in each day. Punishments are indicated by a blue shell. Days with only one game are excluded.
+The first figure depicts Beerio scores over games in the most recent 9 days. Punishments are indicated by a blue shell. Days with only one game are excluded.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
+recent_dates <- beerio_data %>% distinct(Date) %>% arrange(desc(Date)) %>% head(9) %>% pull(Date)
+
 beerio_data %>%
+  filter(Date %in% recent_dates) %>%
   group_by(Date) %>%
   filter(max(Game) > 1 & Name != "Karly") %>%
   ungroup() %>%
   arrange(desc(Date)) %>%
   mutate(Day = fct_reorder(Day, Date, .desc=T)) %>%
   ggplot(aes(x = Game, y = Score, group = Name, color = Name)) + 
-  facet_wrap(~ Day, scales = "free_x") + 
+  facet_wrap(~ Day,  ncol=3) + 
   geom_line(size = 2) +
-  geom_image(data = beerio_data %>% filter(!is.na(Take)) %>% mutate(Day = fct_reorder(Day, Date, .desc=T)) %>% mutate(Image = "img/blueshell.png"), 
+  geom_image(data = beerio_data %>% filter(Date %in% recent_dates) %>% filter(!is.na(Take)) %>% mutate(Day = fct_reorder(Day, Date, .desc=T)) %>% mutate(Image = "img/blueshell.png"), 
              aes(x = Game, y = Score, image = Image), 
              size = .125, inherit.aes = FALSE) + 
   ylab("") + scale_color_discrete("") +
   scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +
   ylim(0, NA) +
-  ggtitle("Beerio Scores", subtitle = "Over the course of evenings") +
+  ggtitle("Beerio Scores", subtitle = "Last nine days") +
   theme_mk8() + theme(legend.position="bottom", panel.grid.minor.y = element_blank())
 
 score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=TRUE) %>% 
@@ -309,7 +312,7 @@ The next plot depicts overall score distributions for each player as a violin--a
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 
-legend_data <- tibble(x = length(unique(beerio_data$Name))*c(1.05, 0.95),
+legend_data <- tibble(x = (length(unique(beerio_data$Name))-1)*c(1.04, 0.96),
                       y = max(beerio_data$Score, na.rm=T)*0.90,
                       image = c("img/star.png","img/bomb.png"),
                       text = c("Gave Shot", "Took Shot"))
@@ -558,8 +561,9 @@ ggplot(beerio_rounds_long, aes(x = Round, y = Score, fill = Name, color = Name))
 The next plot facets the above information into separate days. The lines will be somewhat over-fit as individuals only have one data point per round.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
-
+round_recent_dates <- beerio_rounds_long %>% distinct(Date) %>% arrange(desc(Date)) %>% head(9) %>% pull(Date)
 beerio_rounds_long <- beerio_rounds %>% 
+  filter(Date %in% round_recent_dates) %>%
   pivot_longer(Neil:Karly) %>% 
   filter(name != "Karly") %>%
   rename(Score = value, Name = name) %>%
@@ -576,7 +580,7 @@ ggplot(beerio_rounds_long, aes(x = Round, y = Score, fill = Name, color = Name))
   theme_mk8() + ylab("") + 
   scale_fill_discrete("") +
   scale_color_discrete("") +
-  ggtitle("Beerio Score Over Rounds", subtitle = "By date") + 
+  ggtitle("Beerio Score Over Rounds", subtitle = "Last nine days") + 
   coord_cartesian(ylim = c(0, max(beerio_rounds_long$Score, na.rm=TRUE)+3)) +
   theme(legend.position = "bottom", panel.grid.minor.y = element_blank())
 ```
