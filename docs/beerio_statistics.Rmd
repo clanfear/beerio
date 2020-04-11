@@ -258,9 +258,13 @@ beerio_data %>%
   ggplot(aes(x = Game, y = Score, group = Name, color = Name)) + 
   facet_wrap(~ Day,  ncol=3) + 
   geom_line(size = 2) +
-  geom_image(data = beerio_data %>% filter(Date %in% recent_dates) %>% filter(!is.na(Take)) %>% mutate(Day = fct_reorder(Day, Date, .desc=T)) %>% mutate(Image = "img/blueshell.png"), 
+  geom_image(data = beerio_data %>% 
+               filter(Date %in% recent_dates) %>% 
+               filter(!is.na(Take)) %>% 
+               mutate(Day = fct_reorder(Day, Date, .desc=T)) %>% 
+               mutate(Image = "img/blueshell.png"), 
              aes(x = Game, y = Score, image = Image), 
-             size = .125, inherit.aes = FALSE) + 
+             size = .08, inherit.aes = FALSE, asp = 3) + 
   ylab("") + scale_color_discrete("") +
   scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +
   ylim(0, NA) +
@@ -300,8 +304,8 @@ ggplot(beerio_data %>% filter(Name != "Karly"), aes(x = Game, y = Score)) +
                  !is.na(Give) ~ "img/star.png")) %>% 
                select(Game, Score, Image), 
              aes(x = Game, y = Score, image = Image), 
-             size = .05, inherit.aes = FALSE) +
-  geom_image(data=legend_data, aes(x=x, y=y, image=image), inherit.aes=FALSE) +
+             size = .04, inherit.aes = FALSE, asp=2) +
+  geom_image(data=legend_data, aes(x=x, y=y, image=image), inherit.aes=FALSE, asp=2, size = .04) +
   geom_text(data=legend_data, aes(x=x, y=y, label = text), hjust = 0, nudge_x = 0.25, inherit.aes=FALSE) +
   ggtitle("Beerio Score Over Games", subtitle = "Regressed on game number") + 
   coord_cartesian(ylim = c(0, max(beerio_data$Score+3))) +
@@ -330,8 +334,8 @@ beerio_data %>% filter(Name != "Karly") %>%
                  !is.na(Give) ~ "img/star.png")) %>% 
                select(Game, Score, Image, Name), 
              aes(y = Name, x = Score, image = Image), position = position_jitter(height = 0.08, width=0), 
-             size = .05, inherit.aes = FALSE) +
-  geom_image(data=legend_data, aes(y=x, x=y, image=image), inherit.aes=FALSE) +
+             size = .03, inherit.aes = FALSE, asp = 1.8) +
+  geom_image(data=legend_data, aes(y=x, x=y, image=image), inherit.aes=FALSE, asp = 1.8, size = .03) +
   geom_text(data=legend_data, aes(y=x, x=y, label = text), hjust = 0, nudge_x = 1, inherit.aes=FALSE) +
   scale_color_manual("Shots", values = c("No Shot" = "black", "Give" = "white", "Take" = "red")) +
   xlab("") + 
