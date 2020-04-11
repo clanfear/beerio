@@ -542,6 +542,60 @@ options = list(
   escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
 ```
 
+The next table depicts map-specific average scores with frequencies and percentages played. 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+map_frequencies <- beerio_rounds %>% filter(!is.na(Map)) %>% count(Map, name = "Frequency") %>% mutate(Percent = str_c(round(100*Frequency/sum(Frequency),1), "%"))
+
+map_avg <- beerio_rounds %>% pivot_longer(Neil:Steve) %>%
+  filter(!is.na(name) & !is.na(value)) %>% 
+  group_by(Map) %>% 
+  summarize(`Average Score` = round(mean(value),2)) %>% 
+  left_join(map_frequencies, by = "Map") %>%
+  mutate(Map = fct_recode(Map, 
+                          `Luigi's Mansion`="LM",
+                          `Dragon Palace`="DP",
+                          `Battle Course 1`="BC",
+                          `Battle Stadium`="BS",
+                          `Sweet Sweet Kingdom`="SK",
+                          `Wuhu Town`="WT",
+                          `Urchin Underpass`="UU",
+                          `Lunar Colony`="LC"
+                          )) %>%
+  mutate(Map = fct_reorder(Map, `Average Score`))
+DT::datatable({
+  map_avg %>% mutate_all(~as.character(.))
+},
+callback = JS("
+  $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
+    var retVal;
+        if( x === '' || $.isEmptyObject(x)) x = 1000;
+    if( y === '' || $.isEmptyObject(y)) y = 1000;
+    x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+    y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+    if (x==y) retVal= 0; 
+    else retVal = (x>y) ? 1 : -1; 
+    return retVal;
+  };
+  $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
+  var retVal;
+  x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+  y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+  if (x==y) retVal= 0; 
+  else retVal = (x>y) ? 1 : -1; 
+  return retVal;
+  };
+  "),
+options = list(
+  autoWidth = TRUE,
+  fillContainer = TRUE,
+  pageLength = 8, paging=FALSE, info=FALSE, searching=FALSE, lengthChange=TRUE,
+  aoColumnDefs = list(
+    list(width = "120px", className = 'dt-center',  targets = c(0)),
+    list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(1,2,3)))), 
+  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
+```
+
 The first plot depicts scores over rounds across all nights. That is, the first round of the second match is treated as round 5. Points are jittered for visibility.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
