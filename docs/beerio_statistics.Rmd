@@ -427,6 +427,7 @@ beerio_rounds <- beerio_rounds_raw %>%
 ```{r, echo=FALSE, message=FALSE}
   
 round_table_data <- beerio_rounds %>%
+  filter(!is.na(Map)) %>%
   mutate(Map = fct_recode(Map, 
                           `Luigi's\nMansion`="LM",
                           `Dragon\nPalace`="DP",
