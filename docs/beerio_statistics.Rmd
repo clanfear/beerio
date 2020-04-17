@@ -190,7 +190,7 @@ options = list(
     list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(2,3,4,5)),
     list(width = '250px', bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(6)),
     list(targets = 7, visible =FALSE))
-), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
+), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
 
 ```
 
@@ -238,7 +238,7 @@ beerio_table <- beerio_data %>%
                                list(className = 'dt-center',  targets = c(1,2,3,4,5,6,7,8,9))
                                )
                            ), 
-            escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
+            escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
 ```
 
 # Figures
@@ -473,7 +473,7 @@ options = list(
   fillContainer = TRUE,
   pageLength = 10, paging=TRUE, info=TRUE, searching=TRUE, lengthChange=TRUE,
   aoColumnDefs = list(
-    list(width = "120px", className = 'dt-center',  targets = c(0), orderData=9),
+    list(width = "100px", className = 'dt-center',  targets = c(0), orderData=9),
     list(width = "40px", className = 'dt-center',  targets = c(1)),
     list(width = '80px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(3)),
     list(width = '40px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(2,4,5,6,7)),
@@ -538,9 +538,9 @@ options = list(
   fillContainer = TRUE,
   pageLength = 8, paging=FALSE, info=FALSE, searching=FALSE, lengthChange=TRUE,
   aoColumnDefs = list(
-    list(width = "120px", className = 'dt-center',  targets = c(0)),
+    list(width = "100px", className = 'dt-center',  targets = c(0)),
     list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(1,2,3,4)))), 
-  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
+  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
 ```
 
 The next table depicts map-specific average scores with frequencies and percentages played. 
@@ -592,9 +592,9 @@ options = list(
   fillContainer = TRUE,
   pageLength = 8, paging=FALSE, info=FALSE, searching=FALSE, lengthChange=TRUE,
   aoColumnDefs = list(
-    list(width = "120px", className = 'dt-center',  targets = c(0)),
+    list(width = "100px", className = 'dt-center',  targets = c(0)),
     list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(1,2,3)))), 
-  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
+  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
 ```
 
 The first plot depicts scores over rounds across all nights. That is, the first round of the second match is treated as round 5. Points are jittered for visibility.
