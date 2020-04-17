@@ -713,7 +713,7 @@ neil_ssk <- deviation_data %>% filter(Map=="Sweet Sweet\nKingdom" & Player == "N
 The next plot shows differences between each player's overall average score and their average for the given course. For example, the plot indicates the difference between Neil's overall average and his Sweet Sweet Kingdom average is `r neil_ssk`.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
-ggplot(deviation_data, aes(x = `Average Score`, y = Map, group = Player, fill = Player)) +
+ggplot(deviation_data, aes(x = `Average Score`, y = Map, group = desc(Player), fill = Player)) +
   scale_fill_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
   geom_col(position="dodge") + theme_mk8() + theme(legend.position = "bottom", panel.grid = element_blank()) + ylab("") + ggtitle("Player Averages by Map", subtitle = "Deviations from player average") +
   geom_hline(yintercept = seq(1.5, 7.5, by = 1), color = "gray80") +
