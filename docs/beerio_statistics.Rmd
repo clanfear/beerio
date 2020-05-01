@@ -198,7 +198,7 @@ options = list(
 
 # Descriptive Statistics
 
-This table depicts overall Beerio statistics for all tracked players. Recent Average is calculated as the average score from the last date the player played. So far, we have scored `r sum(beerio_data$Score, na.rm=T)` points in `r beerio_data %>% distinct(Date, Game) %>% nrow()` games.
+This table depicts overall Beerio statistics for all tracked players. So far, we have scored `r prettyNum(sum(beerio_data$Score, na.rm=T),big.mark=",")` points in `r beerio_data %>% distinct(Date, Game) %>% nrow() %>% prettyNum(.,big.mark=",") ` games.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 beerio_table <- beerio_data %>% 
@@ -212,11 +212,6 @@ beerio_table <- beerio_data %>%
             `Times<br>Punisher`  = sum(Give, na.rm=T)) %>%
   ungroup() %>%
   mutate(`Point<br>Percentage` = paste0(round(`Total<br>Points`/sum(`Total<br>Points`),2)*100, "%")) %>%
-  left_join(beerio_data %>% 
-    group_by(Name) %>%
-    filter(!is.na(Score)) %>%
-    filter(Date==max(Date)) %>%
-    summarize(`Recent<br>Average`=round(mean(Score),1))) %>%
   left_join(winners %>% 
               ungroup() %>% 
               filter(Winner != "Tie") %>% 
@@ -233,12 +228,12 @@ beerio_table <- beerio_data %>%
     TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=20>")
   )) %>%
   mutate(`Win<br>Percentage` = paste0(round(Victories/`Games<br>Played`,3)*100, "%" )) %>%
-  select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Total<br>Points`, `Point<br>Percentage`, `Overall<br>Average`, `Recent<br>Average`, `Best<br>Score`, `Worst<br>Score`, `Times<br>Punished`, `Times<br>Punisher`)
+  select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Total<br>Points`, `Point<br>Percentage`, `Overall<br>Average`, `Best<br>Score`, `Worst<br>Score`, `Times<br>Punished`, `Times<br>Punisher`)
   datatable(beerio_table, 
             options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
                            columnDefs = 
                              list(
-                               list(className = 'dt-center',  targets = c(1,2,3,4,5,6,7,8,9,10,11))
+                               list(className = 'dt-center',  targets = c(1,2,3,4,5,6,7,8,9,10))
                                )
                            ), 
             escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
