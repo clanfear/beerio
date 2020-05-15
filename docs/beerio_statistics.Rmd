@@ -39,7 +39,10 @@ extract_punishment <-  function(x, type = "text"){
           count(take, give)
     if (type =="text"){
         punish_count_df %>%
-        mutate(take = ifelse(take==give, "himself", take)) %>%
+        mutate(take = case_when(
+            take==give & take == "Karly" ~ "herself", 
+            take==give & take != "Karly" ~ "himself",
+            TRUE ~ take)) %>%
           mutate(punishment_text = str_c(give, " gave ", shot_index[n], " to ", take)) %>%
           pull(punishment_text) %>%
           str_c(., collapse=", ") %>% 
