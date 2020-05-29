@@ -1,7 +1,7 @@
 ---
 title: "Beerio Statistics"
 date: "Updated: `r gsub(' 0', ' ', format(Sys.Date(), format='%b %d, %Y'))`"
-output: html_document
+output: rmdformats::material
 ---
 
 ```{r setup, include=FALSE}
@@ -24,8 +24,17 @@ theme_mk8 <- function(){
 }
 ```
 
-```{r punishment, include=FALSE}
+```{r setvariables, include=FALSE}
+player_colors <- c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF", "Karly" = "#BBBBBB")
 shot_index <- c("one", "oh lawd two", "SAVE ME BABY JESUS THREE", "--ohhhh, body massage--four")
+bminus_case <- 17.99
+```
+
+```{r loadgamesheet, include=FALSE}
+beerio_sheet_raw <- read_sheet("https://docs.google.com/spreadsheets/d/1V-7lY3NVqVGGEWL-jwwmjYcpLT8mJMN1MI11y-C3Bl0/", sheet = "Data")
+```
+
+```{r punishment, include=FALSE}
 extract_punishment <-  function(x, type = "text"){ 
     if(x == "None"){
       return(NA_character_)
@@ -54,16 +63,11 @@ extract_punishment <-  function(x, type = "text"){
       punish_count_df %>%  mutate(give = ifelse(take==give, NA, give)) %>% select(Punisher=give, Shots=n) %>% return(.)
     }
     }}
-
-player_colors <- c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF", "Karly" = "#BBBBBB")
-
 ```
 
-```{r processing, include=FALSE}
-beerio_sheet_raw <- read_sheet("https://docs.google.com/spreadsheets/d/1V-7lY3NVqVGGEWL-jwwmjYcpLT8mJMN1MI11y-C3Bl0/", sheet = "Data")
-
+```{r tempprocessing, include=FALSE}
 beerio_data_temp <- beerio_sheet_raw %>%
-  select(-contains("...")) %>%
+  select(-contains("..."), -contains("Beverage")) %>%
   filter_all(any_vars(!is.na(.))) %>%
   fill(Date) %>%
   group_by(Date) %>%
@@ -74,12 +78,9 @@ beerio_data_temp <- beerio_sheet_raw %>%
   ungroup()
 ```
 
-```{r, include=FALSE}
-
-# Need Date, Game, Name, Take, Give
-
+```{r maindataprocessing, include=FALSE}
 punishment_df <- beerio_sheet_raw %>%
-  select(-contains("...")) %>%
+  select(-contains("..."),  -contains("Beverage")) %>%
   filter_all(any_vars(!is.na(.))) %>%
   fill(Date) %>%
   group_by(Date) %>%
@@ -107,7 +108,7 @@ shots_df <- full_join(shots_take, shots_give)
 beerio_data <- beerio_data_temp %>% left_join(shots_df)
 ```
 
-```{r, include=FALSE}
+```{r recentgames, include=FALSE}
 last_players <- beerio_data %>%
   filter(Date ==  max(Date)) %>%
   filter(!is.na(Score)) %>%
@@ -123,7 +124,9 @@ if(length(last_players)==2){
 
 n_recent_games <- beerio_data %>%
   filter(Date ==  max(Date)) %>% pull(Game) %>% max()
+```
 
+```{r winners, include=FALSE}
 winners <- beerio_data %>% 
   select(Date, Game, Name, Score) %>%
   filter(!is.na(Score)) %>%
@@ -137,16 +140,22 @@ winners <- beerio_data %>%
   ))
 ```
 
-This document tracks Beerio game statistics. The last tracked `r ifelse(n_recent_games > 1, "games were", "game was")` `r ifelse(n_recent_games==1, "one", n_recent_games)` `r ifelse(n_recent_games > 1, "games", "game")` played on `r str_replace(format(max(beerio_data$Date), "%A, %B %e, %Y"), "  ", " ")` by `r last_players_text`.
+# Overview
 
-# All Game Data
+This document tracks Beerio game statistics. Use the tabs on the left to browse between *Game* and *Round* data. A single *Game* consists of four *Rounds*, over which players must consume a 16 oz. beer or equivalent beverage. The last tracked `r ifelse(n_recent_games > 1, "games were", "game was")` `r ifelse(n_recent_games==1, "one", n_recent_games)` `r ifelse(n_recent_games > 1, "games", "game")` played on `r str_replace(format(max(beerio_data$Date), "%A, %B %e, %Y"), "  ", " ")` by `r last_players_text`.
 
-This table contains scores and events for all logged games. It is searchable and sortable on all columns.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+# Game Data {.tabset}
+
+## Scores and Events
+
+This table contains scores and events for all logged games.
+
+```{r allgames, echo=FALSE, warning=FALSE, message=FALSE}
 
 all_games <- beerio_sheet_raw %>%
-  select(-contains("...")) %>%
+  select(-contains("..."),  -contains("Beverage")) %>%
   filter_all(any_vars(!is.na(.))) %>%
   fill(Date) %>%
   group_by(Date) %>%
@@ -159,47 +168,85 @@ all_games <- beerio_sheet_raw %>%
   mutate(Punishment = map_chr(Punishment, ~extract_punishment(., type = "text"))) %>%
   select(Date, Game, everything(), Punishment)
 # datatable(all_games, options = list(pageLength = 10, scrollY=FALSE, paging=TRUE, info=TRUE), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+```
 
+
+
+```{r allgamestable, echo=FALSE, warning=FALSE, message=FALSE}
 
 DT::datatable({
   all_games %>% mutate_all(~as.character(.)) %>% select(Date, Game, Chuck, Neil, Shawn, Steve, Punishment, date_dummy)
 },
-callback = JS("
-  $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
+  callback = JS("
+    $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
+      var retVal;
+          if( x === '' || $.isEmptyObject(x)) x = 1000;
+      if( y === '' || $.isEmptyObject(y)) y = 1000;
+      x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+      y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+      if (x==y) retVal= 0; 
+      else retVal = (x>y) ? 1 : -1; 
+      return retVal;
+    };
+    $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
     var retVal;
-        if( x === '' || $.isEmptyObject(x)) x = 1000;
-    if( y === '' || $.isEmptyObject(y)) y = 1000;
     x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
     y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
     if (x==y) retVal= 0; 
     else retVal = (x>y) ? 1 : -1; 
     return retVal;
-  };
-  $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
-  var retVal;
-  x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-  y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-  if (x==y) retVal= 0; 
-  else retVal = (x>y) ? 1 : -1; 
-  return retVal;
-  };
-  "),
-options = list(
-  autoWidth = TRUE,
-  fillContainer = TRUE,
-  pageLength = 10, paging=TRUE, info=TRUE, searching=TRUE, lengthChange=TRUE,
-  aoColumnDefs = list(
-    list(width = "45px", className = 'dt-center',  targets = c(1), orderData = 7),
-    list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(2,3,4,5)),
-    list(width = '250px', bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(6)),
-    list(targets = 7, visible =FALSE))
-), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+    };
+    "),
+  options = list(
+    headerCallback = DT::JS(
+      "function(thead) {",
+      "  $(thead).css('font-size', '12px');",
+      "}"
+    ),
+    autoWidth = TRUE,
+    fillContainer = TRUE,
+    pageLength = 10, paging=TRUE, info=TRUE, searching=FALSE, lengthChange=FALSE,
+    aoColumnDefs = list(
+      list(className = 'dt-center',  targets = c(1), orderData = 7),
+      list(bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(2,3,4,5,6)),
+      list(targets = 7, visible =FALSE))
+    ), 
+  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE,
+  style = 'bootstrap', class = "compact") %>%
+  DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7), fontSize = '80%')
+```
 
+## Beverages
+
+```{r, echo=FALSE}
+beverages <-
+  beerio_sheet_raw %>%
+  select(Date,  contains("Beverage")) %>%
+  fill(Date) %>%
+  filter(Date >= lubridate::mdy("5-22-2020")) %>%
+  arrange(Date) %>%
+  mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) %>%
+  pivot_longer(-Date, names_to = "Name", values_to = "Beverage") %>%
+  filter(!is.na(Beverage)) %>%
+  mutate(Name = str_remove(Name, "_Beverage")) 
+
+bminus_count <- sum(beverages$Beverage=="Busch Lite")
+
+extrapolated_bminus_count <- round((beerio_data_temp %>% filter(!is.na(Score)) %>% nrow())*.9,0)
+```
+
+Since beverage data recording began on `r min(beverages$Date)`, we have consumed `r bminus_count` Busch Lites. Assuming an average price of  \$`r bminus_case` for an 18 pack, we have consumed \$`r round(bminus_case*(bminus_count/18),2)` in Busch Lite since beverage recording began. Assuming a Busch Lite is consumed in 90% of all rounds played to date, we can extrapolate this to `r extrapolated_bminus_count` Busch Lites valued at \$`r round(bminus_case*(extrapolated_bminus_count/18),2)` since score recording began on `r format(min(beerio_data_temp$Date),  "%A, %B %e, %Y")`.
+
+The table below depicts a cross-tabulation of players by beverages.
+
+```{r, echo=FALSE}
+beverages %>%
+  with(., table(Beverage, Name)) %>%
+  rmdformats::pilltabs(chisq=FALSE, resid=FALSE)
 ```
 
 
-
-# Descriptive Statistics
+## Glory and Shame
 
 This table depicts overall Beerio statistics for all tracked players. So far, we have scored `r prettyNum(sum(beerio_data$Score, na.rm=T),big.mark=",")` points in `r beerio_data %>% distinct(Date, Game) %>% nrow() %>% prettyNum(.,big.mark=",") ` games.
 
@@ -221,28 +268,45 @@ beerio_table <- beerio_data %>%
               count(Name = Winner) %>% 
               complete(Name = unique(beerio_data$Name), fill = list(n=0)) %>%
               rename(Victories = n)) %>%
-  mutate(Name = case_when(
-    Name == "Chuck" ~ "<img src = 'img/lightblueshyguy.png' height=20> Chuck",
-    Name == "Neil" ~ "<img src = 'img/blackshyguy.png' height=20> Neil",
-    Name == "Shawn" ~ "<img src = 'img/catpeach.png' height=20> Shawn",
-    Name == "Steve" ~ "<img src = 'img/toadette.png' height=20> Steve",
-    Name == "Karly" ~ "<img src = 'img/lakitu.png' height=20> Korl",
-    Name == "Chad"  ~ "<img src = 'img/donkeykong.png' height=20> Chad",
-    TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=20>")
-  )) %>%
+  # mutate(Name = case_when(
+  #   Name == "Chuck" ~ "<img src = 'img/lightblueshyguy.png' height=10> Chuck",
+  #   Name == "Neil" ~ "<img src = 'img/blackshyguy.png' height=10> Neil",
+  #   Name == "Shawn" ~ "<img src = 'img/catpeach.png' height=10> Shawn",
+  #   Name == "Steve" ~ "<img src = 'img/toadette.png' height=10> Steve",
+  #   Name == "Karly" ~ "<img src = 'img/lakitu.png' height=10> Korl",
+  #   Name == "Chad"  ~ "<img src = 'img/donkeykong.png' height=10> Chad",
+  #   TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=10>")
+  # )) %>%
   mutate(`Win<br>Percentage` = paste0(round(Victories/`Games<br>Played`,3)*100, "%" )) %>%
   select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Total<br>Points`, `Point<br>Percentage`, `Overall<br>Average`, `Best<br>Score`, `Worst<br>Score`, `Times<br>Punished`, `Times<br>Punisher`)
-  datatable(beerio_table, 
-            options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
+
+beerio_table %>%
+  select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Times<br>Punished`, `Times<br>Punisher`) %>%
+  datatable(options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
                            columnDefs = 
                              list(
-                               list(className = 'dt-center',  targets = c(1,2,3,4,5,6,7,8,9,10))
+                               list(className = 'dt-center',  targets = c(1,2,3,4,5))
                                )
                            ), 
             escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
 ```
 
-# Figures
+## Scores
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+beerio_table %>% select(Name, `Total<br>Points`, `Point<br>Percentage`, `Overall<br>Average`, `Best<br>Score`, `Worst<br>Score`) %>%
+  datatable(options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
+                           columnDefs = 
+                             list(
+                               list(className = 'dt-center',  targets = c(1,2,3,4,5))
+                               )
+                           ), 
+            escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+```
+
+## Game Figures {.tabset .tabset-pills}
+
+### Past Nine Days
 
 The first figure depicts Beerio scores over games in the most recent 9 days. Punishments are indicated by a blue shell. Days with only one game are excluded.
 
@@ -280,6 +344,8 @@ score_text <- broom::tidy(lm(Score ~ Game + Name, data = beerio_data), conf.int=
 
 ```
 
+### Scores Over Games
+
 The next plot pools the data across evenings to show the change in average score for each player as the evening wears on. Points indicate scores for each match, jittered horizontally to reduce overplotting. In a linear model, each additional game is associated with a score difference of `r score_text`. The relationship between game and score appears nonlinear, however. Accordingly, the lines on the plot are loess splines of score on game number. These splines represent nonparametric trends--they will, however, tend to be overly flexible with few data points.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
@@ -312,6 +378,8 @@ ggplot(beerio_data %>% filter(Name != "Karly"), aes(x = Game, y = Score)) +
   coord_cartesian(ylim = c(0, max(beerio_data$Score+3))) +
   theme(legend.position = "bottom", panel.grid.minor.y = element_blank())
 ```
+
+### Score Distributions
 
 The next plot depicts overall score distributions for each player as a violin--a symmetrical density plot. Wider cross-sections indicate more games with scores in that range. Points indicate scores for each match, jittered horizontally to reduce overplotting. The line inside the violin denotes the median score.
 
@@ -380,6 +448,8 @@ median_score <- median(beerio_data$Score, na.rm=T)
 mean_score <- mean(beerio_data$Score, na.rm=T)
 ```
 
+### Overall Score Distribution
+
 The last plot depicts the overall score distribution with mean (`r round(mean_score,1)`) and median (`r round(median_score,1)`). Green bar sections indicate scores receiving shots.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
@@ -412,11 +482,13 @@ beerio_data %>% filter(Name != "Karly") %>%
   theme(legend.position = "none", axis.text.y = element_blank(), panel.grid = element_blank())
 ```
 
-# Round Data
+# Round Data {.tabset}
+
+## Round-Level Scores
 
 This section depicts the round-level data which contains information on scores in specific maps. Due to difficulty, it may be recorded less frequently than game-level data. The table below shows all recorded rounds.
 
-```{r, include=FALSE}
+```{r rounddata, include=FALSE}
 beerio_rounds_raw <- read_sheet("https://docs.google.com/spreadsheets/d/1V-7lY3NVqVGGEWL-jwwmjYcpLT8mJMN1MI11y-C3Bl0/", sheet = "Round Data")
 beerio_rounds <- beerio_rounds_raw %>%
   select(-contains("...")) %>%
@@ -426,7 +498,7 @@ beerio_rounds <- beerio_rounds_raw %>%
 ```
 
 ```{r, echo=FALSE, message=FALSE}
-  
+
 round_table_data <- beerio_rounds %>%
   filter(!is.na(Map)) %>%
   mutate(Map = fct_recode(Map, 
@@ -450,41 +522,46 @@ DT::datatable({
   round_table_data %>% mutate_all(~as.character(.)) %>% select(Date, Game, Round, Map, Chuck, Neil, Shawn, Steve, Shot, date_dummy)
 },
 callback = JS("
-  $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
+    $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
+      var retVal;
+          if( x === '' || $.isEmptyObject(x)) x = 1000;
+      if( y === '' || $.isEmptyObject(y)) y = 1000;
+      x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+      y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+      if (x==y) retVal= 0; 
+      else retVal = (x>y) ? 1 : -1; 
+      return retVal;
+    };
+    $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
     var retVal;
-        if( x === '' || $.isEmptyObject(x)) x = 1000;
-    if( y === '' || $.isEmptyObject(y)) y = 1000;
     x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
     y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
     if (x==y) retVal= 0; 
     else retVal = (x>y) ? 1 : -1; 
     return retVal;
-  };
-  $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
-  var retVal;
-  x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-  y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-  if (x==y) retVal= 0; 
-  else retVal = (x>y) ? 1 : -1; 
-  return retVal;
-  };
-  "),
-options = list(
-  autoWidth = TRUE,
-  fillContainer = TRUE,
-  pageLength = 10, paging=TRUE, info=TRUE, searching=TRUE, lengthChange=TRUE,
-  aoColumnDefs = list(
-    list(width = "100px", className = 'dt-center',  targets = c(0), orderData=9),
-    list(width = "40px", className = 'dt-center',  targets = c(1)),
-    list(width = '80px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(3)),
-    list(width = '40px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(2,4,5,6,7)),
-    list(width = '120px', bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(8)),
-    list(targets = 9, visible =FALSE))
-), escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE, extensions = "Responsive")
+    };
+    "),
+  options = list(
+    headerCallback = DT::JS(
+      "function(thead) {",
+      "  $(thead).css('font-size', '12px');",
+      "}"
+    ),
+    autoWidth = TRUE,
+    fillContainer = TRUE,
+    pageLength = 10, paging=TRUE, info=TRUE, searching=FALSE, lengthChange=FALSE,
+    aoColumnDefs = list(
+      list(className = 'dt-center',  targets = c(0), orderData = 9),
+      list(width = 40, bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(1,2,4,5,6,7)),
+      list(width = 50, bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(3)),
+      list(width = 90, bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(0)),
+      list(targets = 9, visible =FALSE))
+    ), 
+  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE,
+  style = 'bootstrap', class = "compact") %>%
+  DT::formatStyle(columns = 1:9, fontSize = '80%')
 
 ```
-
-
 
 ```{r, include=FALSE}
 map_data <- beerio_rounds %>% pivot_longer(Neil:Steve) %>%
@@ -506,43 +583,51 @@ map_data <- beerio_rounds %>% pivot_longer(Neil:Steve) %>%
   rename(Player = name)
 ```
 
+## Player Scores by Course
+
 The next table displays average scores for each player on each course.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-map_data_table <- map_data %>% ungroup() %>% mutate(`Average Score` = round(`Average Score`,1 )) %>% pivot_wider(names_from = Player, values_from = `Average Score`) %>% mutate(Map = str_replace(Map, "\n", " "))
+map_data_table <- map_data %>% ungroup() %>% 
+  mutate(`Average Score` = round(`Average Score`,1 )) %>% 
+  pivot_wider(names_from = Player, values_from = `Average Score`) %>% mutate(Map = str_replace(Map, "\n", " "))
 
 DT::datatable({
   map_data_table %>% mutate_all(~as.character(.))
 },
-callback = JS("
-  $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
+  callback = JS("
+    $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
+      var retVal;
+          if( x === '' || $.isEmptyObject(x)) x = 1000;
+      if( y === '' || $.isEmptyObject(y)) y = 1000;
+      x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+      y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+      if (x==y) retVal= 0; 
+      else retVal = (x>y) ? 1 : -1; 
+      return retVal;
+    };
+    $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
     var retVal;
-        if( x === '' || $.isEmptyObject(x)) x = 1000;
-    if( y === '' || $.isEmptyObject(y)) y = 1000;
     x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
     y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
     if (x==y) retVal= 0; 
     else retVal = (x>y) ? 1 : -1; 
     return retVal;
-  };
-  $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
-  var retVal;
-  x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-  y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-  if (x==y) retVal= 0; 
-  else retVal = (x>y) ? 1 : -1; 
-  return retVal;
-  };
-  "),
-options = list(
-  autoWidth = TRUE,
-  fillContainer = TRUE,
-  pageLength = 8, paging=FALSE, info=FALSE, searching=FALSE, lengthChange=TRUE,
-  aoColumnDefs = list(
-    list(width = "100px", className = 'dt-center',  targets = c(0)),
-    list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(1,2,3,4)))), 
-  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+    };
+    "),
+  options = list(
+    autoWidth = TRUE,
+    fillContainer = TRUE,
+    pageLength = 10, paging=TRUE, info=TRUE, searching=FALSE, lengthChange=FALSE,
+    aoColumnDefs = list(
+      list(bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = 0:4)
+    )), 
+  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE,
+  style = 'bootstrap', class = "compact") %>%
+  DT::formatStyle(columns = c(1, 2, 3, 4, 5), fontSize = '100%')
 ```
+
+## Course Info
 
 The next table depicts map-specific average scores with frequencies and percentages played. 
 
@@ -598,6 +683,10 @@ options = list(
   escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
 ```
 
+## Round Figures {.tabset .tabset-pills}
+
+### Scores Over Rounds
+
 The first plot depicts scores over rounds across all nights. That is, the first round of the second match is treated as round 5. Points are jittered for visibility.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
@@ -617,6 +706,8 @@ ggplot(beerio_rounds_long, aes(x = Round, y = Score, fill = Name, color = Name))
   coord_cartesian(ylim = c(0, max(beerio_rounds_long$Score, na.rm=TRUE)+3)) +
   theme(legend.position = "bottom", panel.grid.minor.y = element_blank())
 ```
+
+### Scores Over Rounds
 
 The next plot facets the above information into separate days. The lines will be somewhat over-fit as individuals only have one data point per round.
 
@@ -644,6 +735,8 @@ ggplot(beerio_rounds_long, aes(x = Round, y = Score, fill = Name, color = Name))
   coord_cartesian(ylim = c(0, max(beerio_rounds_long$Score, na.rm=TRUE)+3)) +
   theme(legend.position = "bottom", panel.grid.minor.y = element_blank())
 ```
+
+### Player-Course Score Distributions
 
 The next plot shows the full distribution of scores for each map colored by player. Courses are sorted by their overall mean score--the map with the current highest mean score is `r str_replace(levels(map_data$Map)[8], "\n", " ")`.
 
@@ -711,6 +804,8 @@ deviation_data <- map_data %>% group_by(Player) %>% mutate(`Average Score` = `Av
 neil_ssk <- deviation_data %>% filter(Map=="Sweet Sweet\nKingdom" & Player == "Neil") %>% pull(`Average Score`) %>% round(1)
 ```
 
+### Player-Course Score Deviations
+
 The next plot shows differences between each player's overall average score and their average for the given course. For example, the plot indicates the difference between Neil's overall average and his Sweet Sweet Kingdom average is `r neil_ssk`.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
@@ -721,7 +816,7 @@ ggplot(deviation_data, aes(x = `Average Score`, y = Map, group = desc(Player), f
   scale_x_continuous(breaks = scales::pretty_breaks(3))
 ```
 
-
+### Alternate Deviations
 
 This plot provides an alternate visualization of the same information.
 
