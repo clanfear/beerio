@@ -197,6 +197,7 @@ DT::datatable({
     return retVal;
     };
     "),
+extensions = 'Responsive',
   options = list(
     headerCallback = DT::JS(
       "function(thead) {",
@@ -541,6 +542,7 @@ callback = JS("
     return retVal;
     };
     "),
+extensions = 'Responsive',
   options = list(
     headerCallback = DT::JS(
       "function(thead) {",
