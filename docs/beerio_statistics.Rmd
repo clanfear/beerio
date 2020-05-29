@@ -283,7 +283,8 @@ beerio_table <- beerio_data %>%
 
 beerio_table %>%
   select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Times<br>Punished`, `Times<br>Punisher`) %>%
-  datatable(options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
+  datatable(extensions = 'Responsive',
+            options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
                            columnDefs = 
                              list(
                                list(className = 'dt-center',  targets = c(1,2,3,4,5))
@@ -296,7 +297,8 @@ beerio_table %>%
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 beerio_table %>% select(Name, `Total<br>Points`, `Point<br>Percentage`, `Overall<br>Average`, `Best<br>Score`, `Worst<br>Score`) %>%
-  datatable(options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
+  datatable(extensions = 'Responsive',
+            options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
                            columnDefs = 
                              list(
                                list(className = 'dt-center',  targets = c(1,2,3,4,5))
