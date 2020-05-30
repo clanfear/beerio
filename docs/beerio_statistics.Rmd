@@ -105,7 +105,6 @@ beerio_datatable <- function(x, sort_column = NA, sort_target = 1){
       "  $(thead).css('font-size', '1vw');",
       "}"
     ),
-    scrollX=TRUE,
     autoWidth = TRUE,
     fillContainer = TRUE,
     pageLength = 10, paging=TRUE, info=TRUE, searching=FALSE, lengthChange=FALSE,
