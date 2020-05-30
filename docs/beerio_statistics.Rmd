@@ -1,6 +1,6 @@
 ---
 title: "Beerio Statistics"
-date: "Updated: `r gsub(' 0', ' ', format(Sys.Date(), format='%b %d, %Y'))`"
+date: "Updated: `r gsub(' 0', ' ', format(Sys.time(), format='%H:%M %b %d, %Y'))`"
 output: rmdformats::material
 ---
 
@@ -64,6 +64,59 @@ extract_punishment <-  function(x, type = "text"){
     }
     }}
 ```
+
+```{r beeriodatatable, echo=FALSE}
+beerio_datatable <- function(x, sort_column = NA, sort_target = 1){
+  n_cols <- ncol(x)
+  targs <- (2:n_cols)-1
+  if(is.na(sort_column)){
+   ao_column_defs <-  list(
+      list(bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = targs ))
+  } else{
+   ao_column_defs <-  list(
+      list(className = 'dt-center',  targets = sort_target, orderData = sort_column),
+      list(bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = targs[!targs==sort_target] ),
+      list(targets = sort_column, visible =FALSE))
+  }
+  DT::datatable(x,
+    callback = JS("
+    $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
+      var retVal;
+          if( x === '' || $.isEmptyObject(x)) x = 1000;
+      if( y === '' || $.isEmptyObject(y)) y = 1000;
+      x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+      y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+      if (x==y) retVal= 0; 
+      else retVal = (x>y) ? 1 : -1; 
+      return retVal;
+    };
+    $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
+    var retVal;
+    x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
+    y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
+    if (x==y) retVal= 0; 
+    else retVal = (x>y) ? 1 : -1; 
+    return retVal;
+    };
+    "),
+  options = list(
+    headerCallback = DT::JS(
+      "function(thead) {",
+      "  $(thead).css('font-size', '1vw');",
+      "}"
+    ),
+    scrollX=TRUE,
+    autoWidth = TRUE,
+    fillContainer = TRUE,
+    pageLength = 10, paging=TRUE, info=TRUE, searching=FALSE, lengthChange=FALSE,
+    aoColumnDefs = ao_column_defs), 
+  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE,
+  style = 'bootstrap', class = "compact") %>%
+  DT::formatStyle(columns = 1:n_cols, fontSize = '1vw') %>%
+  DT::formatStyle(columns = 2:n_cols, `text-align` = "center")
+}
+```
+
 
 ```{r tempprocessing, include=FALSE}
 beerio_data_temp <- beerio_sheet_raw %>%
@@ -173,48 +226,10 @@ all_games <- beerio_sheet_raw %>%
 
 
 ```{r allgamestable, echo=FALSE, warning=FALSE, message=FALSE}
-
-DT::datatable({
-  all_games %>% mutate_all(~as.character(.)) %>% select(Date, Game, Chuck, Neil, Shawn, Steve, Punishment, date_dummy)
-},
-  callback = JS("
-    $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
-      var retVal;
-          if( x === '' || $.isEmptyObject(x)) x = 1000;
-      if( y === '' || $.isEmptyObject(y)) y = 1000;
-      x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-      y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-      if (x==y) retVal= 0; 
-      else retVal = (x>y) ? 1 : -1; 
-      return retVal;
-    };
-    $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
-    var retVal;
-    x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-    y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-    if (x==y) retVal= 0; 
-    else retVal = (x>y) ? 1 : -1; 
-    return retVal;
-    };
-    "),
-extensions = 'Responsive',
-  options = list(
-    headerCallback = DT::JS(
-      "function(thead) {",
-      "  $(thead).css('font-size', '12px');",
-      "}"
-    ),
-    autoWidth = TRUE,
-    fillContainer = TRUE,
-    pageLength = 10, paging=TRUE, info=TRUE, searching=FALSE, lengthChange=FALSE,
-    aoColumnDefs = list(
-      list(className = 'dt-center',  targets = c(1), orderData = 7),
-      list(bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(2,3,4,5,6)),
-      list(targets = 7, visible =FALSE))
-    ), 
-  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE,
-  style = 'bootstrap', class = "compact") %>%
-  DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7), fontSize = '80%')
+all_games %>% 
+  mutate_all(~as.character(.)) %>% 
+  select(Date, Game, Neil, Shawn, Chuck, Steve, Punishment, date_dummy) %>% 
+  beerio_datatable(sort_column = 7, sort_target = 1)
 ```
 
 ## Beverages
@@ -281,30 +296,19 @@ beerio_table <- beerio_data %>%
   mutate(`Win<br>Percentage` = paste0(round(Victories/`Games<br>Played`,3)*100, "%" )) %>%
   select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Total<br>Points`, `Point<br>Percentage`, `Overall<br>Average`, `Best<br>Score`, `Worst<br>Score`, `Times<br>Punished`, `Times<br>Punisher`)
 
+
+
+  
 beerio_table %>%
   select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Times<br>Punished`, `Times<br>Punisher`) %>%
-  datatable(extensions = 'Responsive',
-            options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
-                           columnDefs = 
-                             list(
-                               list(className = 'dt-center',  targets = c(1,2,3,4,5))
-                               )
-                           ), 
-            escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+  beerio_datatable()
 ```
 
 ## Scores
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 beerio_table %>% select(Name, `Total<br>Points`, `Point<br>Percentage`, `Overall<br>Average`, `Best<br>Score`, `Worst<br>Score`) %>%
-  datatable(extensions = 'Responsive',
-            options = list(pageLength = 10, searching=FALSE, lengthChange=FALSE, paging=FALSE, info=FALSE,
-                           columnDefs = 
-                             list(
-                               list(className = 'dt-center',  targets = c(1,2,3,4,5))
-                               )
-                           ), 
-            escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+  beerio_datatable()
 ```
 
 ## Game Figures {.tabset .tabset-pills}
@@ -518,52 +522,12 @@ round_table_data <- beerio_rounds %>%
   select(-Note) %>%
   arrange(desc(Date), Game, Round) %>%
   mutate(date_dummy = Date) %>%
+  mutate(Round = paste(Game, Round, sep="-")) %>%
   mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) 
 
 
-DT::datatable({
-  round_table_data %>% mutate_all(~as.character(.)) %>% select(Date, Game, Round, Map, Chuck, Neil, Shawn, Steve, Shot, date_dummy)
-},
-callback = JS("
-    $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
-      var retVal;
-          if( x === '' || $.isEmptyObject(x)) x = 1000;
-      if( y === '' || $.isEmptyObject(y)) y = 1000;
-      x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-      y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-      if (x==y) retVal= 0; 
-      else retVal = (x>y) ? 1 : -1; 
-      return retVal;
-    };
-    $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
-    var retVal;
-    x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-    y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-    if (x==y) retVal= 0; 
-    else retVal = (x>y) ? 1 : -1; 
-    return retVal;
-    };
-    "),
-extensions = 'Responsive',
-  options = list(
-    headerCallback = DT::JS(
-      "function(thead) {",
-      "  $(thead).css('font-size', '12px');",
-      "}"
-    ),
-    autoWidth = TRUE,
-    fillContainer = TRUE,
-    pageLength = 10, paging=TRUE, info=TRUE, searching=FALSE, lengthChange=FALSE,
-    aoColumnDefs = list(
-      list(className = 'dt-center',  targets = c(0), orderData = 9),
-      list(width = 40, bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(1,2,4,5,6,7)),
-      list(width = 50, bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(3)),
-      list(width = 90, bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(0)),
-      list(targets = 9, visible =FALSE))
-    ), 
-  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE,
-  style = 'bootstrap', class = "compact") %>%
-  DT::formatStyle(columns = 1:9, fontSize = '80%')
+round_table_data %>% mutate_all(~as.character(.)) %>% select(Date, Round, Map, Neil, Shawn, Chuck, Steve, Shot, date_dummy) %>%
+    beerio_datatable(sort_column = 8, sort_target = 0)
 
 ```
 
@@ -593,42 +557,18 @@ The next table displays average scores for each player on each course.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 map_data_table <- map_data %>% ungroup() %>% 
-  mutate(`Average Score` = round(`Average Score`,1 )) %>% 
-  pivot_wider(names_from = Player, values_from = `Average Score`) %>% mutate(Map = str_replace(Map, "\n", " "))
+  mutate(`Average Score` = round(`Average Score`,1 )) %>%
+  group_by(Map) %>%
+  mutate(Overall = round(mean(`Average Score`),1)) %>% 
+  ungroup() %>%
+  pivot_wider(names_from = Player, values_from = `Average Score`) %>% 
+  mutate(Map = str_replace(Map, "\n", " ")) %>%
+  select(Map, Neil, Shawn, Chuck, Steve, Overall) %>%
+  arrange(desc(Overall)) 
 
-DT::datatable({
-  map_data_table %>% mutate_all(~as.character(.))
-},
-  callback = JS("
-    $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
-      var retVal;
-          if( x === '' || $.isEmptyObject(x)) x = 1000;
-      if( y === '' || $.isEmptyObject(y)) y = 1000;
-      x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-      y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-      if (x==y) retVal= 0; 
-      else retVal = (x>y) ? 1 : -1; 
-      return retVal;
-    };
-    $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
-    var retVal;
-    x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-    y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-    if (x==y) retVal= 0; 
-    else retVal = (x>y) ? 1 : -1; 
-    return retVal;
-    };
-    "),
-  options = list(
-    autoWidth = TRUE,
-    fillContainer = TRUE,
-    pageLength = 10, paging=TRUE, info=TRUE, searching=FALSE, lengthChange=FALSE,
-    aoColumnDefs = list(
-      list(bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = 0:4)
-    )), 
-  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE,
-  style = 'bootstrap', class = "compact") %>%
-  DT::formatStyle(columns = c(1, 2, 3, 4, 5), fontSize = '100%')
+map_data_table %>% 
+  mutate_all(~as.character(.)) %>%
+  beerio_datatable()
 ```
 
 ## Course Info
@@ -654,37 +594,8 @@ map_avg <- beerio_rounds %>% pivot_longer(Neil:Steve) %>%
                           `Lunar Colony`="LC"
                           )) %>%
   mutate(Map = fct_reorder(Map, `Average Score`))
-DT::datatable({
-  map_avg %>% mutate_all(~as.character(.))
-},
-callback = JS("
-  $.fn.dataTableExt.oSort['NumericOrBlank-asc'] = function(x,y) {
-    var retVal;
-        if( x === '' || $.isEmptyObject(x)) x = 1000;
-    if( y === '' || $.isEmptyObject(y)) y = 1000;
-    x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-    y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-    if (x==y) retVal= 0; 
-    else retVal = (x>y) ? 1 : -1; 
-    return retVal;
-  };
-  $.fn.dataTableExt.oSort['NumericOrBlank-desc'] = function(y,x) {
-  var retVal;
-  x = (x = parseFloat($.trim(x).replace(/,/g,''))) ? x : 0;
-  y = (y = parseFloat($.trim(y).replace(/,/g,''))) ? y : 0;
-  if (x==y) retVal= 0; 
-  else retVal = (x>y) ? 1 : -1; 
-  return retVal;
-  };
-  "),
-options = list(
-  autoWidth = TRUE,
-  fillContainer = TRUE,
-  pageLength = 8, paging=FALSE, info=FALSE, searching=FALSE, lengthChange=TRUE,
-  aoColumnDefs = list(
-    list(width = "100px", className = 'dt-center',  targets = c(0)),
-    list(width = '45px',  bSortable = TRUE, sType = 'NumericOrBlank', className = 'dt-center', targets = c(1,2,3)))), 
-  escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE)
+
+map_avg %>% mutate_all(~as.character(.)) %>% beerio_datatable()
 ```
 
 ## Round Figures {.tabset .tabset-pills}
