@@ -65,8 +65,8 @@ extract_punishment <-  function(x, type = "text"){
     }}
 ```
 
-```{r beeriodatatable, echo=FALSE}
-beerio_datatable <- function(x, sort_column = NA, sort_target = 1){
+```{r beeriodatatable, echo=FALSE, warning=FALSE, message=FALSE}
+beerio_datatable <- function(x, sort_column = NA, sort_target = 1, paging=TRUE){
   n_cols <- ncol(x)
   targs <- (2:n_cols)-1
   if(is.na(sort_column)){
@@ -107,7 +107,7 @@ beerio_datatable <- function(x, sort_column = NA, sort_target = 1){
     ),
     autoWidth = TRUE,
     fillContainer = TRUE,
-    pageLength = 10, paging=TRUE, info=TRUE, searching=FALSE, lengthChange=FALSE,
+    pageLength = 10, paging=paging, info=TRUE, searching=FALSE, lengthChange=FALSE,
     aoColumnDefs = ao_column_defs), 
   escape=FALSE, autoHideNavigation=TRUE, rownames=FALSE,
   style = 'bootstrap', class = "compact") %>%
@@ -233,7 +233,7 @@ all_games %>%
 
 ## Beverages
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 beverages <-
   beerio_sheet_raw %>%
   select(Date,  contains("Beverage")) %>%
@@ -254,10 +254,32 @@ Since beverage data recording began on `r min(beverages$Date)`, we have consumed
 
 The table below depicts a cross-tabulation of players by beverages.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 beverages %>%
   with(., table(Beverage, Name)) %>%
   rmdformats::pilltabs(chisq=FALSE, resid=FALSE)
+```
+
+## Drinking Habits
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+beverage_index_sheet <- read_sheet("https://docs.google.com/spreadsheets/d/1V-7lY3NVqVGGEWL-jwwmjYcpLT8mJMN1MI11y-C3Bl0/", sheet = "Beverages") %>%
+  select(Beverage = Name, Oz, `Alcohol %`, BEU)
+beverages %>% left_join(beverage_index_sheet, by = "Beverage") %>%
+  filter(!is.na(BEU)) %>%
+  group_by(Name, Date) %>%
+  mutate(total_beu_by_date = sum(BEU),
+         total_volume_by_date = sum(Oz)) %>%
+  ungroup() %>%
+  group_by(Name) %>%
+  summarize(`Average BEU` = mean(BEU), 
+            `Max BEU` = max(BEU),
+            `Average Daily BEU` = mean(total_beu_by_date),
+            `Average Daily Volume` = mean(total_volume_by_date),
+            ) %>%
+  mutate(across(where(is.numeric), ~ signif(., 2))) %>%  
+  beerio_datatable(paging=FALSE)
 ```
 
 
