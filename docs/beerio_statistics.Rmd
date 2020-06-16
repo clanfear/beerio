@@ -241,9 +241,12 @@ beverages <-
   filter(Date >= lubridate::mdy("5-22-2020")) %>%
   arrange(Date) %>%
   mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) %>%
-  pivot_longer(-Date, names_to = "Name", values_to = "Beverage") %>%
+  group_by(Date) %>%
+   mutate(Game = row_number()) %>%
+  pivot_longer(-c(Date, Game), names_to = "Name", values_to = "Beverage") %>%
   filter(!is.na(Beverage)) %>%
-  mutate(Name = str_remove(Name, "_Beverage")) 
+  mutate(Name = str_remove(Name, "_Beverage")) %>%
+  arrange(desc(Date), Game)
 
 bminus_count <- sum(beverages$Beverage=="Busch Lite")
 
