@@ -602,11 +602,21 @@ The next table depicts map-specific average scores with frequencies and percenta
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 map_frequencies <- beerio_rounds %>% filter(!is.na(Map)) %>% count(Map, name = "Frequency") %>% mutate(Percent = str_c(round(100*Frequency/sum(Frequency),1), "%"))
 
+map_max <- beerio_rounds %>% pivot_longer(Neil:Karly) %>%
+  filter(!is.na(name) & !is.na(value) & name != "Karly") %>% group_by(Map) %>% filter(value == max(value)) %>%
+  group_by(Map, name) %>% 
+  summarize(times = n(), score = first(value)) %>%
+  ungroup() %>%
+  mutate(name_times = ifelse(times > 1, paste0(name, " (", times, ")"), name)) %>%
+  group_by(Map) %>%
+  summarize(`Best Score` = score, `Best Player(s) (Times)` = paste(name_times, collapse = " & "))
+
 map_avg <- beerio_rounds %>% pivot_longer(Neil:Steve) %>%
   filter(!is.na(name) & !is.na(value)) %>% 
   group_by(Map) %>% 
   summarize(`Average Score` = round(mean(value),2)) %>% 
   left_join(map_frequencies, by = "Map") %>%
+  left_join(map_max, by = "Map") %>%
   mutate(Map = fct_recode(Map, 
                           `Luigi's Mansion`="LM",
                           `Dragon Palace`="DP",
