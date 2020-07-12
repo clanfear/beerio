@@ -276,8 +276,16 @@ beverages %>% left_join(beverage_index_sheet, by = "Beverage") %>%
          total_volume_by_date = sum(Oz)) %>%
   ungroup() %>%
   group_by(Name) %>%
-  summarize(`Average BEU` = mean(BEU), 
-            `Max BEU` = max(BEU),
+  mutate(`Average BEU` = mean(BEU), 
+            `Max BEU` = max(BEU)) %>%
+  group_by(Name, Date) %>%
+  summarize(`Average BEU` = first(`Average BEU`),
+            `Max BEU` = first(`Max BEU`),
+            total_beu_by_date = first(total_beu_by_date),
+            total_volume_by_date = first(total_volume_by_date)) %>%
+  group_by(Name) %>%
+  summarize(`Average BEU` = first(`Average BEU`),
+            `Max BEU` = first(`Max BEU`),
             `Average Daily BEU` = mean(total_beu_by_date),
             `Average Daily Volume` = mean(total_volume_by_date),
             ) %>%
