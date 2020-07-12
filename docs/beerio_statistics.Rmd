@@ -289,10 +289,9 @@ beverages %>% left_join(beverage_index_sheet, by = "Beverage") %>%
             `Average Daily BEU` = mean(total_beu_by_date),
             `Average Daily Volume` = mean(total_volume_by_date),
             ) %>%
-  mutate(across(where(is.numeric), ~ signif(., 2))) %>%  
+  mutate(across(matches("BEU"), ~ signif(., 2)), `Average Daily Volume` = signif(`Average Daily Volume`, 3)) %>%  
   beerio_datatable(paging=FALSE)
 ```
-
 
 ## Glory and Shame
 
