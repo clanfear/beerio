@@ -151,11 +151,20 @@ shots_take <- punishment_df %>%
   filter(!is.na(take)) %>%
   count(Date, Game, take) %>%
   rename(Name = take, Take = n)
+
 shots_give <- punishment_df %>%
   filter(!is.na(give)) %>%
   count(Date, Game, give) %>%
   rename(Name = give, Give = n)
-shots_df <- full_join(shots_take, shots_give)
+
+shame_shots <- punishment_df %>%
+  filter(!is.na(take) & is.na(give)) %>%
+  count(Date, Game, take) %>%
+  rename(Name = take, Shame = n)
+  
+
+shots_df <- full_join(shots_take, shots_give) %>%
+  full_join(shame_shots)
 
 beerio_data <- beerio_data_temp %>% left_join(shots_df)
 ```
@@ -306,7 +315,8 @@ beerio_table <- beerio_data %>%
             `Best<br>Score`      = max(Score, na.rm=T), 
             `Worst<br>Score`     = min(Score, na.rm=T),
             `Times<br>Punished`  = sum(Take, na.rm=T),
-            `Times<br>Punisher`  = sum(Give, na.rm=T)) %>%
+            `Times<br>Punisher`  = sum(Give, na.rm=T),
+            `Times<br>Shamed`    = sum(Shame, na.rm=T)) %>%
   ungroup() %>%
   mutate(`Point<br>Percentage` = paste0(round(`Total<br>Points`/sum(`Total<br>Points`),2)*100, "%")) %>%
   mutate(`Punishment<br>Ratio` = signif(`Times<br>Punisher`/`Times<br>Punished`,3)) %>%
@@ -326,13 +336,16 @@ beerio_table <- beerio_data %>%
   #   Name == "Chad"  ~ "<img src = 'img/donkeykong.png' height=10> Chad",
   #   TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=10>")
   # )) %>%
-  mutate(`Win<br>Percentage` = paste0(round(Victories/`Games<br>Played`,3)*100, "%" ))
+  mutate(`Win<br>Percentage` = paste0(round(Victories/`Games<br>Played`,3)*100, "%" ),
+         `Shame<br>Percentage` = paste0(round(`Times<br>Shamed`/`Games<br>Played`,3)*100, "%" ))
 
 
 
   
 beerio_table %>%
-  select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Times<br>Punished`, `Times<br>Punisher`,`Punishment<br>Ratio`, `Wins per<br>Punishment`) %>%
+  select(Name, 
+         #`Games<br>Played`, Victories, 
+         `Win<br>Percentage`, `Times<br>Punished`, `Times<br>Punisher`,`Times<br>Shamed`, `Shame<br>Percentage`, `Punishment<br>Ratio`, `Wins per<br>Punishment`) %>%
   beerio_datatable()
 ```
 
