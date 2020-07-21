@@ -314,7 +314,7 @@ beerio_table <- beerio_data %>%
             `Total<br>Points`       = sum(Score, na.rm=TRUE),
             `Best<br>Score`      = max(Score, na.rm=T), 
             `Worst<br>Score`     = min(Score, na.rm=T),
-            `Times<br>Punished`  = sum(Take, na.rm=T),
+            `Times<br>Punished`  = sum(Take, na.rm=T) - sum(Shame, na.rm=T),
             `Times<br>Punisher`  = sum(Give, na.rm=T),
             `Times<br>Shamed`    = sum(Shame, na.rm=T)) %>%
   ungroup() %>%
