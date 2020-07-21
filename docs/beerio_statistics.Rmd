@@ -309,12 +309,14 @@ beerio_table <- beerio_data %>%
             `Times<br>Punisher`  = sum(Give, na.rm=T)) %>%
   ungroup() %>%
   mutate(`Point<br>Percentage` = paste0(round(`Total<br>Points`/sum(`Total<br>Points`),2)*100, "%")) %>%
+  mutate(`Punishment Ratio` = signif(`Times<br>Punisher`/`Times<br>Punished`,3)) %>%
   left_join(winners %>% 
               ungroup() %>% 
               filter(Winner != "Tie") %>% 
               count(Name = Winner) %>% 
               complete(Name = unique(beerio_data$Name), fill = list(n=0)) %>%
               rename(Victories = n)) %>%
+    mutate(`Wins per Punishment` = signif(Victories / `Times<br>Punished`,3)) %>%
   # mutate(Name = case_when(
   #   Name == "Chuck" ~ "<img src = 'img/lightblueshyguy.png' height=10> Chuck",
   #   Name == "Neil" ~ "<img src = 'img/blackshyguy.png' height=10> Neil",
@@ -324,14 +326,13 @@ beerio_table <- beerio_data %>%
   #   Name == "Chad"  ~ "<img src = 'img/donkeykong.png' height=10> Chad",
   #   TRUE ~ paste0(Name, " <img src = 'img/questionmark.png' height=10>")
   # )) %>%
-  mutate(`Win<br>Percentage` = paste0(round(Victories/`Games<br>Played`,3)*100, "%" )) %>%
-  select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Total<br>Points`, `Point<br>Percentage`, `Overall<br>Average`, `Best<br>Score`, `Worst<br>Score`, `Times<br>Punished`, `Times<br>Punisher`)
+  mutate(`Win<br>Percentage` = paste0(round(Victories/`Games<br>Played`,3)*100, "%" ))
 
 
 
   
 beerio_table %>%
-  select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Times<br>Punished`, `Times<br>Punisher`) %>%
+  select(Name, `Games<br>Played`, Victories, `Win<br>Percentage`, `Times<br>Punished`, `Times<br>Punisher`,`Punishment Ratio`, `Wins per Punishment`) %>%
   beerio_datatable()
 ```
 
