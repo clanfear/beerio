@@ -249,7 +249,7 @@ beverages <-
   fill(Date) %>%
   filter(Date >= lubridate::mdy("5-22-2020")) %>%
   arrange(Date) %>%
-  mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) %>%
+  mutate(date_text = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) %>%
   group_by(Date) %>%
    mutate(Game = row_number()) %>%
   pivot_longer(-c(Date, Game), names_to = "Name", values_to = "Beverage") %>%
@@ -258,11 +258,10 @@ beverages <-
   arrange(desc(Date), Game)
 
 bminus_count <- sum(beverages$Beverage=="Busch Lite")
-
 extrapolated_bminus_count <- round((beerio_data_temp %>% filter(!is.na(Score)) %>% nrow())*.9,0)
 ```
 
-Since beverage data recording began on `r min(beverages$Date)`, we have consumed `r bminus_count` Busch Lites. Assuming an average price of  \$`r bminus_case` for an 18 pack, we have consumed \$`r round(bminus_case*(bminus_count/18),2)` in Busch Lite since beverage recording began. Assuming a Busch Lite is consumed in 90% of all rounds played to date, we can extrapolate this to `r extrapolated_bminus_count` Busch Lites valued at \$`r round(bminus_case*(extrapolated_bminus_count/18),2)` since score recording began on `r format(min(beerio_data_temp$Date),  "%A, %B %e, %Y")`.
+Since beverage data recording began on `r str_replace(format(min(beverages$Date), "%A, %B %e, %Y"), "  ", " ")`, we have consumed `r bminus_count` Busch Lites. Assuming an average price of  \$`r bminus_case` for an 18 pack, we have consumed \$`r round(bminus_case*(bminus_count/18),2)` in Busch Lite since beverage recording began. Assuming a Busch Lite is consumed in 90% of all rounds played to date, we can extrapolate this to `r extrapolated_bminus_count` Busch Lites valued at \$`r round(bminus_case*(extrapolated_bminus_count/18),2)` since score recording began on `r format(min(beerio_data_temp$Date),  "%A, %B %e, %Y")`.
 
 The table below depicts a cross-tabulation of players by beverages.
 
