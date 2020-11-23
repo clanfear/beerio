@@ -249,7 +249,7 @@ beverages <-
   fill(Date) %>%
   filter(Date >= lubridate::mdy("5-22-2020")) %>%
   arrange(Date) %>%
-  mutate(date_text = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) %>%
+  # mutate(Date = str_replace(format(Date, "%A, %B %e, %Y"), "  ", " ")) %>%
   group_by(Date) %>%
    mutate(Game = row_number()) %>%
   pivot_longer(-c(Date, Game), names_to = "Name", values_to = "Beverage") %>%
@@ -629,7 +629,7 @@ map_max <- beerio_rounds %>% pivot_longer(Neil:Karly) %>%
   ungroup() %>%
   mutate(name_times = ifelse(times > 1, paste0(name, " (", times, ")"), name)) %>%
   group_by(Map) %>%
-  summarize(`Best Score` = score, `Best Player(s) (Times)` = paste(name_times, collapse = " & "))
+  summarize(`Best Score` = first(score), `Best Player(s) (Times)` = first(paste(name_times, collapse = " & ")))
 
 map_avg <- beerio_rounds %>% pivot_longer(Neil:Steve) %>%
   filter(!is.na(name) & !is.na(value)) %>% 
