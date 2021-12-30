@@ -1,0 +1,81 @@
+name,template,type,speed_land,speed_ag,speed_water,speed_air,accel,weight,handling_land,handling_ag,handling_water,handling_air,traction,turbo
+Baby Daisy,Baby Peach,character,2.25,2,2.5,2.75,4,2,5,5,4.5,5,4.25,4
+Lemmy,Baby Rosalina,character,2.25,2,2.5,2.75,4.25,2,4.75,4.75,4.25,4.75,3.75,4
+Baby Luigi,Baby Mario,character,2.5,2.25,2.75,3,4.25,2.25,4.5,4.5,4,4.5,4,3.75
+Dry Bones,Baby Mario,character,2.5,2.25,2.75,3,4.25,2.25,4.5,4.5,4,4.5,4,3.75
+Light Mii,Baby Mario,character,2.5,2.25,2.75,3,4.25,2.25,4.5,4.5,4,4.5,4,3.75
+Wendy,Toadette,character,2.75,2.5,3,3.25,4.25,2.5,4.25,4.25,3.75,4.25,3.5,3.75
+Isabelle,Toadette,character,2.75,2.5,3,3.25,4.25,2.5,4.25,4.25,3.75,4.25,3.5,3.75
+Lakitu,Koopa Troopa,character,2.75,2.5,3,3.25,4,2.5,4.5,4.5,4,4.5,4.25,3.75
+Bowser Jr.,Koopa Troopa,character,2.75,2.5,3,3.25,4,2.5,4.5,4.5,4,4.5,4.25,3.75
+Shy Guy,Toad,character,3,2.75,3.25,3.5,4,2.75,4.25,4.25,3.75,4.25,4,3.5
+Larry,Toad,character,3,2.75,3.25,3.5,4,2.75,4.25,4.25,3.75,4.25,4,3.5
+Inkling Girl,Cat Peach,character,3.25,3,3.5,3.75,4,2.75,4,4,3.5,4,3.75,3.5
+Female Villager,Cat Peach,character,3.25,3,3.5,3.75,4,2.75,4,4,3.5,4,3.75,3.5
+Daisy,Peach,character,3.5,3.25,3.75,4,3.75,3,3.75,3.75,3.25,3.75,3.75,3.5
+Yoshi,Peach,character,3.5,3.25,3.75,4,3.75,3,3.75,3.75,3.25,3.75,3.75,3.5
+Inkling Boy,Tanooki Mario,character,3.5,3.25,3.75,4,3.75,3.25,3.75,3.75,3.25,3.75,3.25,3.5
+Male Villager,Tanooki Mario,character,3.5,3.25,3.75,4,3.75,3.25,3.75,3.75,3.25,3.75,3.25,3.5
+Ludwig,Mario,character,3.75,3.5,4,4.25,3.5,3.5,3.5,3.5,3,3.5,3.5,3.25
+Medium Mii,Mario,character,3.75,3.5,4,4.25,3.5,3.5,3.5,3.5,3,3.5,3.5,3.25
+Iggy,Luigi,character,3.75,3.5,4,4.25,3.5,3.5,3.75,3.75,3.25,3.75,3.25,3.25
+King Boo,Rosalina,character,4,3.75,4.25,4.5,3.25,3.75,3.25,3.25,2.75,3.25,3.75,3.25
+Link (both outfits),Rosalina,character,4,3.75,4.25,4.5,3.25,3.75,3.25,3.25,2.75,3.25,3.75,3.25
+Gold Mario,Metal Mario,character,4.25,4,4.5,4.75,3.25,4.5,3.25,3.25,2.75,3.25,3.25,3
+Pink Gold Peach,Metal Mario,character,4.25,4,4.5,4.75,3.25,4.5,3.25,3.25,2.75,3.25,3.25,3
+Donkey Kong,Waluigi,character,4.5,4.25,4.75,5,3.25,4,3,3,2.5,3,3,3
+Roy,Waluigi,character,4.5,4.25,4.75,5,3.25,4,3,3,2.5,3,3,3
+Dry Bowser,Wario,character,4.75,4.5,5,5.25,3,4.25,2.75,2.75,2.25,2.75,3.25,2.75
+Morton,Bowser,character,4.75,4.5,5,5.25,3,4.5,2.5,2.5,2,2.5,3,2.75
+Heavy Mii,Bowser,character,4.75,4.5,5,5.25,3,4.5,2.5,2.5,2,2.5,3,2.75
+300 SL Roadster,Standard Kart,vehicle,0,0,0,0,0,0,0,0,0,0,0,0
+The Duke,Standard Kart,vehicle,0,0,0,0,0,0,0,0,0,0,0,0
+Varmint,Pipe Frame,vehicle,-0.5,-0.5,0,-0.5,0.5,-0.25,0.5,0.25,0.5,-0.25,0.25,0.5
+City Tripper,Pipe Frame,vehicle,-0.5,-0.5,0,-0.5,0.5,-0.25,0.5,0.25,0.5,-0.25,0.25,0.5
+Sports Coupe,Mach 8,vehicle,0,0.5,0,0.25,-0.25,0.25,-0.25,0.25,0,-0.25,0.25,0
+Inkstriker,Mach 8,vehicle,0,0.5,0,0.25,-0.25,0.25,-0.25,0.25,0,-0.25,0.25,0
+Tri-Speeder,Steel Driver,vehicle,0.25,-0.25,0.5,-0.75,-0.75,0.5,-0.5,-0.5,0.75,-0.5,0,-0.5
+Bone Rattler,Steel Driver,vehicle,0.25,-0.25,0.5,-0.75,-0.75,0.5,-0.5,-0.5,0.75,-0.5,0,-0.5
+Comet,Cat Cruiser,vehicle,-0.25,0,-0.25,0.25,0.25,0,0.25,0,0,0.25,0,0.25
+Yoshi Bike,Cat Cruiser,vehicle,-0.25,0,-0.25,0.25,0.25,0,0.25,0,0,0.25,0,0.25
+Teddy Buggy,Cat Cruiser,vehicle,-0.25,0,-0.25,0.25,0.25,0,0.25,0,0,0.25,0,0.25
+B-Dasher,Circuit Special,vehicle,0.5,0.25,-0.5,-0.25,-0.75,0.25,-0.5,-0.25,-0.25,-0.75,-0.5,-0.75
+P-Wing,Circuit Special,vehicle,0.5,0.25,-0.5,-0.25,-0.75,0.25,-0.5,-0.25,-0.25,-0.75,-0.5,-0.75
+GLA,Badwagon,vehicle,0.5,0,-0.25,-0.5,-1,0.5,-0.75,-0.5,-0.25,-0.75,0.5,-1
+Standard ATV,Badwagon,vehicle,0.5,0,-0.25,-0.5,-1,0.5,-0.75,-0.5,-0.25,-0.75,0.5,-1
+Sport Bike,Prancer,vehicle,0.25,0,0,0,-0.5,-0.25,0,-0.25,0.25,0,-0.25,-0.25
+Jet Bike,Prancer,vehicle,0.25,0,0,0,-0.5,-0.25,0,-0.25,0.25,0,-0.25,-0.25
+Mr Scooty,Biddybuggy,vehicle,-0.75,-0.25,-0.5,-0.5,0.75,-0.5,0.5,0.5,0.5,0.25,0.25,0.75
+Streetle,Landship,vehicle,-0.5,-0.75,0.5,-0.25,0.5,-0.5,0.25,-0.25,0.75,0,0.75,0.5
+Gold Standard,Sneeker,vehicle,0.25,0,-0.25,0,-0.5,0,0,0,0,-0.25,-0.75,-0.25
+Master Cycle,Sneeker,vehicle,0.25,0,-0.25,0,-0.5,0,0,0,0,-0.25,-0.75,-0.25
+Standard Bike,W 25 Silver Arrow,vehicle,-0.25,0.25,-0.25,0,0.25,-0.25,0.25,0.25,0.25,0,0.5,0.25
+Flame Rider,W 25 Silver Arrow,vehicle,-0.25,0.25,-0.25,0,0.25,-0.25,0.25,0.25,0.25,0,0.5,0.25
+Wild Wiggler,W 25 Silver Arrow,vehicle,-0.25,0.25,-0.25,0,0.25,-0.25,0.25,0.25,0.25,0,0.5,0.25
+Splat Buggy,Blue Falcon,vehicle,0.25,0.25,-0.25,0,-0.25,-0.5,-0.25,0.5,0.25,-0.5,0,-0.25
+Koopa Clown,Tanooki Kart,vehicle,-0.25,0,0.25,0,-0.5,0.25,0.25,0,0.5,0,1,-0.25
+Master Cycle Zero,Tanooki Kart,vehicle,-0.25,0,0.25,0,-0.5,0.25,0.25,0,0.5,0,1,-0.25
+Blue Standard,Standard,wheels,0,0,0,0,0,0,0,0,0,0,0,0
+GLA Tires,Standard,wheels,0,0,0,0,0,0,0,0,0,0,0,0
+Hot Monster,Monster,wheels,0,0,-0.25,-0.5,-0.5,0.5,-0.75,-0.75,-0.5,-0.5,0.5,-0.25
+Ancient Tires,Monster,wheels,0,0,-0.25,-0.5,-0.5,0.5,-0.75,-0.75,-0.5,-0.5,0.5,-0.25
+Azure Roller,Roller,wheels,-0.5,-0.5,0,0,0.5,-0.5,0.25,0.25,0.25,0.25,-0.25,0.75
+Wood,Slim,wheels,0.25,0.5,-0.25,-0.25,-0.5,0,0.25,0,0.25,0.25,-1,-0.25
+Crimson Slim,Slim,wheels,0.25,0.5,-0.25,-0.25,-0.5,0,0.25,0,0.25,0.25,-1,-0.25
+Cyber Slick,Slick,wheels,0.5,0.5,-0.75,-0.75,-0.75,0.25,-0.25,-0.25,-0.75,-0.5,-1.25,-0.75
+Gold Tires,Metal,wheels,0.5,-0.25,0,-0.25,-1,0.5,-0.25,-0.5,-0.25,-0.75,-0.75,-0.75
+Leaf Tires,Button,wheels,-0.25,0,-0.25,-0.25,0.25,-0.5,0,0.25,0,-0.25,-0.5,0.5
+Retro Off-Road,Off-Road,wheels,0.25,0,0.25,-0.5,-0.25,0.25,-0.5,-0.25,-0.5,-0.5,0.25,-0.5
+Triforce Tires,Off-Road,wheels,0.25,0,0.25,-0.5,-0.25,0.25,-0.5,-0.25,-0.5,-0.5,0.25,-0.5
+Cushion,Sponge,wheels,-0.25,-0.25,-0.5,0.25,0,-0.25,-0.25,0,-0.5,0,0.25,0.25
+Waddle Wing,Super Glider,glider,0,0,0,0,0,0,0,0,0,0,0,0
+Hylian Kite,Super Glider,glider,0,0,0,0,0,0,0,0,0,0,0,0
+Parachute,Cloud Glider,glider,-0.25,0.25,0,-0.25,0.25,-0.25,0,0,0,0.25,0,0.25
+Flower Glider,Cloud Glider,glider,-0.25,0.25,0,-0.25,0.25,-0.25,0,0,0,0.25,0,0.25
+Paper Glider,Cloud Glider,glider,-0.25,0.25,0,-0.25,0.25,-0.25,0,0,0,0.25,0,0.25
+Plane Glider,Wario Wing,glider,0,0.25,-0.25,0,0,0.25,0,-0.25,0.25,0,-0.25,0
+Gold Glider,Wario Wing,glider,0,0.25,-0.25,0,0,0.25,0,-0.25,0.25,0,-0.25,0
+Paraglider,Wario Wing,glider,0,0.25,-0.25,0,0,0.25,0,-0.25,0.25,0,-0.25,0
+Parafoil,Peach Parasol,glider,-0.25,0.25,-0.25,-0.25,0.25,0,0,-0.25,0.25,0.25,-0.25,0.25
+Bowser Kite,Peach Parasol,glider,-0.25,0.25,-0.25,-0.25,0.25,0,0,-0.25,0.25,0.25,-0.25,0.25
+MKTV Parafoil,Peach Parasol,glider,-0.25,0.25,-0.25,-0.25,0.25,0,0,-0.25,0.25,0.25,-0.25,0.25

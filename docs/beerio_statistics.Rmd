@@ -680,7 +680,7 @@ ggplot(beerio_rounds_long, aes(x = Round, y = Score, fill = Name, color = Name))
 
 The next plot facets the above information into separate days. The lines will be somewhat over-fit as individuals only have one data point per round.
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
+```{r eval = FALSE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.align='center', dev="png", dpi = 300}
 round_recent_dates <- beerio_rounds_long %>% distinct(Date) %>% arrange(desc(Date)) %>% head(9) %>% pull(Date)
 beerio_rounds_long <- beerio_rounds %>% 
   filter(Date %in% round_recent_dates) %>%
