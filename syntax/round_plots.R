@@ -69,3 +69,16 @@ avg_round_scores_plot <- round_table |>
   theme(legend.position = "bottom") + 
   labs(y = NULL, title = "Round Scores", subtitle = "Player averages over time")
 ggsave(avg_round_scores_plot, file = "./website/_site/img/avg_round_scores_plot.png", width = 6, height = 6, dpi = 300)
+
+avg_round_scores_course_plot <- round_table |>
+  filter(!is.na(map_name)) |>
+  semi_join(round_table |>
+              count(player) |>
+              filter(n > 500)) |>
+  ggplot(aes(x = date, y = score, group = map_name, color = map_name)) +
+  facet_wrap(~player) +
+  geom_smooth(se = FALSE) +
+  theme_mk8() + 
+  theme(legend.position = "bottom") + 
+  labs(y = NULL, title = "Round Scores", subtitle = "Player averages by map")
+ggsave(avg_round_scores_course_plot, file = "./website/_site/img/avg_round_scores_course_plot.png", width = 6, height = 6, dpi = 300)
