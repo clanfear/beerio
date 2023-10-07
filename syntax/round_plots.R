@@ -65,6 +65,7 @@ avg_round_scores_plot <- round_table |>
   ggplot(aes(x = date, y = score, group = player, color = player)) +
   scale_color_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
   geom_smooth(se = FALSE) +
+  scale_y_continuous(limits = c(0, NA)) +
   theme_mk8() + 
   theme(legend.position = "bottom") + 
   labs(y = NULL, title = "Round Scores", subtitle = "Player averages over time")
@@ -78,6 +79,7 @@ avg_round_scores_course_plot <- round_table |>
   ggplot(aes(x = date, y = score, group = map_name, color = map_name)) +
   facet_wrap(~player) +
   geom_smooth(se = FALSE) +
+  scale_y_continuous(limits = c(0, NA)) +
   theme_mk8() + 
   theme(legend.position = "bottom") + 
   labs(y = NULL, title = "Round Scores", subtitle = "Player averages by map", color = NULL)

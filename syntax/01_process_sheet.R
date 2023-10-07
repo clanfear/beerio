@@ -19,7 +19,7 @@ game_table <- read_sheet("https://docs.google.com/spreadsheets/d/1V-7lY3NVqVGGEW
   select(game_id, game, date, player = name, score, beverage)
 
 
-beverage_index_sheet <- read_sheet("https://docs.google.com/spreadsheets/d/1V-7lY3NVqVGGEWL-jwwmjYcpLT8mJMN1MI11y-C3Bl0/", sheet = "Beverages", guess_max = 99999) %>%
+beverage_table <- read_sheet("https://docs.google.com/spreadsheets/d/1V-7lY3NVqVGGEWL-jwwmjYcpLT8mJMN1MI11y-C3Bl0/", sheet = "Beverages", guess_max = 99999) %>%
   select(beverage = Name, volume_oz = Oz, abv = `Alcohol %`, beu = BEU, worst_rank = `Worst Ranking`)
 
 round_table_wide <- read_sheet("https://docs.google.com/spreadsheets/d/1V-7lY3NVqVGGEWL-jwwmjYcpLT8mJMN1MI11y-C3Bl0/", sheet = "Round Data", guess_max = 99999) |>
@@ -89,6 +89,7 @@ player_table <- game_table |>
             across(score, list(mean = mean, median=median, min=min, max=max), .names = "{.fn}_{.col}")) |>
   left_join(character_table)
 
+save(beverage_table, file = "./data/beverage_table.RData")
 save(game_table, file = "./data/game_table.RData")  
 save(round_table, file = "./data/round_table.RData")
 save(punishment_table, file = "./data/punishment_table.RData") 
