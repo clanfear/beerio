@@ -1,0 +1,17 @@
+{
+  "index.qmd": {
+    "index.html": "38b9c589"
+  },
+  "about.qmd": {
+    "about.html": "d9f8e943"
+  },
+  "pages/beverages.qmd": {
+    "beverages.html": "9299aca3"
+  },
+  "pages/players.qmd": {
+    "players.html": "9a9fae54"
+  },
+  "pages/scores.qmd": {
+    "scores.html": "d8699eb6"
+  }
+}

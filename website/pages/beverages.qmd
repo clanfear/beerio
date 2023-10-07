@@ -1,0 +1,5 @@
+---
+title: "Scores"
+---
+
+This is a placeholder page

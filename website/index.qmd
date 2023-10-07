@@ -1,0 +1,5 @@
+---
+title: "BeerioKart"
+---
+
+This website tracks Beerio game statistics. Use the navigation bar at the top to browse different types of data.

@@ -1,0 +1,29 @@
+project:
+  type: website
+
+website:
+  title: "BeerioKart"
+  navbar:
+    logo: img/logo.png
+    title: false
+    background: white
+    left:
+      - href: index.qmd
+        text: Home
+      - href: about.qmd
+        text: About
+      - href: pages/scores.qmd
+        text: Scores
+      - href: pages/players.qmd
+        text: Players
+      - href: pages/beverages.qmd
+        text: Beverages
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+

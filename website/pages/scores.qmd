@@ -1,0 +1,7 @@
+---
+title: "Scores"
+---
+
+![](/_site/img/avg_round_scores_plot.png){fig-align="center"}
+
+![](/_site/img/relative_strength_plot.png){fig-align="center"}

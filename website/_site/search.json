@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "BeerioKart",
+    "section": "",
+    "text": "This website tracks Beerio game statistics. Use the navigation bar at the top to browse different types of data."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "pages/beverages.html",
+    "href": "pages/beverages.html",
+    "title": "Scores",
+    "section": "",
+    "text": "This is a placeholder page"
+  },
+  {
+    "objectID": "pages/players.html",
+    "href": "pages/players.html",
+    "title": "Beverages",
+    "section": "",
+    "text": "This is a placeholder page"
+  }
+]
