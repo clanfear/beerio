@@ -7,7 +7,7 @@ website:
     logo: img/logo.png
     title: false
     background: white
-    left:
+    right:
       - href: index.qmd
         text: Home
       - href: about.qmd
