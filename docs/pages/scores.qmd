@@ -5,3 +5,5 @@ title: "Scores"
 ![](img/avg_round_scores_plot.png){fig-align="center"}
 
 ![](img/relative_strength_plot.png){fig-align="center"}
+
+![](img/relative_strength_year_plot.png){fig-align="center"}
