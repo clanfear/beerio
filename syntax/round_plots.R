@@ -84,3 +84,27 @@ avg_round_scores_course_plot <- round_table |>
   theme(legend.position = "bottom") + 
   labs(y = NULL, title = "Round Scores", subtitle = "Player averages by map", color = NULL)
 ggsave(avg_round_scores_course_plot, file = "./docs/_site/img/avg_round_scores_course_plot.png", width = 6, height = 6, dpi = 300)
+
+#
+
+# Overall round scores by time
+
+
+avg_round_scores_players_plot <- round_table |>
+  filter(!is.na(map_name)) |>
+  semi_join(round_table |>
+              count(player) |>
+              filter(n > 500)) |>
+  inner_join(game_table |>
+              count(game_id) |> filter(n <=5)) |>
+  group_by(player, map_name, n) |>
+  summarize(avg_score = mean(score)) |>
+  ggplot(aes(x = n, y = avg_score, group = player, color = player)) +
+  scale_color_manual("",values = c("Chuck" = "#F8766D", "Neil" = "#7CAE00", "Shawn" = "#00BFC4", "Steve"="#C77CFF")) +
+  geom_line() +
+  facet_wrap(~map_name, nrow = 4) +
+  theme_mk8() + 
+  theme(legend.position = "bottom",
+        panel.grid.minor.x = element_blank()) + 
+  labs(y = NULL, title = "Average Round Scores", subtitle = "By number of players", x = "Number of players")
+ggsave(avg_round_scores_players_plot, file = "./docs/_site/img/avg_round_scores_players_plot.png", width = 5, height = 8, dpi = 300)

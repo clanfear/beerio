@@ -7,6 +7,9 @@ title: "Scores"
 
 ![](../img/relative_strength_plot.png){fig-align="center"}
 
+![](..img/avg_round_scores_players_plot.png)
+
+
 ![](../img/relative_strength_year_plot.png){fig-align="center"}
 
 ![](../img/beu_score.png){fig-align="center"}
